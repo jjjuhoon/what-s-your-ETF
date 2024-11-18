@@ -31,9 +31,6 @@ public class ETFStock extends BasicEntity {
     @Column(name = "percentage")
     private Double percentage;
 
-    @Column(name = "sell_at")
-    private LocalDateTime sellAt;
-
     @Column(name = "purchase_price")
     private Long purchasePrice;
 }

@@ -1,6 +1,6 @@
 package Back.whats_your_ETF.controller;
 
-import Back.whats_your_ETF.dto.ETFlistResponse;
+import Back.whats_your_ETF.dto.PortfolioListResponse;
 import Back.whats_your_ETF.dto.TradeHistoryResponse;
 import Back.whats_your_ETF.dto.UserResponse;
 import Back.whats_your_ETF.service.UserService;
@@ -47,7 +47,7 @@ public class UserController {
 
     //1.3.1 : 나의 ETF목록 가져오기
     @GetMapping("/etf/list/{user_id}")
-    public ResponseEntity<ETFlistResponse> getUserETFlist(@PathVariable("user_id") Long userId) {
+    public ResponseEntity<PortfolioListResponse> getUserETFlist(@PathVariable("user_id") Long userId) {
         return userService.getUserETFlistById(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
