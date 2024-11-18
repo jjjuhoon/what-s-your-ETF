@@ -14,13 +14,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/userinfo")
 public class UserController {
 
     private final UserService userService;
 
     // 사용자 정보 불러오기
-    @GetMapping("/userinfo/{user_id}")
+    @GetMapping("/{user_id}")
     public ResponseEntity<UserResponse> getUserInfo(@PathVariable("user_id") Long userId) {
         return userService.getUserById(userId)
                 .map(ResponseEntity::ok)
