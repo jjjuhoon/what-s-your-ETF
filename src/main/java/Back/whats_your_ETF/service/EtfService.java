@@ -24,6 +24,7 @@ public class EtfService {
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
 
+
     @Transactional
     public void buyETF(Long userId, EtfRequest.etfInvestList etfInvestList) {
         // 1. 사용자 조회
@@ -67,6 +68,31 @@ public class EtfService {
 
             etfStockRepository.save(etfStock);
         });
+    }
+
+    @Transactional
+    public void sellETF(Long portfolioId) {
+        // 1. 포트폴리오 조회
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PORTFOLIO_NOT_FOUND));
+
+        User user = portfolio.getUser();
+
+        // 2. 수익금 계산: 투자금 * (수익률 / 100)
+        long investAmount = portfolio.getInvestAmount();
+        double revenuePercentage = portfolio.getRevenue() != null ? portfolio.getRevenue() : 0;
+        long profit = (long) (investAmount * (revenuePercentage / 100.0));
+
+        // 3. 사용자 자산 업데이트 (투자금 + 수익금 반환)
+        long totalRefund = investAmount + profit;
+        user.setAsset(user.getAsset() + totalRefund);
+        userRepository.save(user);
+
+        // 4. 포트폴리오에 속한 모든 ETFStock 삭제
+        etfStockRepository.deleteAll(portfolio.getEtfStocks());
+
+        // 5. 포트폴리오 삭제
+        portfolioRepository.delete(portfolio);
     }
 
 }
