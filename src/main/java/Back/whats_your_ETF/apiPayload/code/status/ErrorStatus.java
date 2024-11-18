@@ -22,18 +22,10 @@ ErrorStatus implements BaseErrorCode {
 
     // 사용자 관련 응답
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4001", "사용자를 찾을수 없습니다."),
-    LANGUAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4002", "설정 가능한 언어가 없습니다."),
-    COUNSELOR_NOT_FOUND(HttpStatus.NOT_FOUND, "COUNSELOR4001", "상담사를 찾을수 없습니다."),
-    INVALID_JWT(HttpStatus.UNAUTHORIZED, "USER4003", "유효하지 않은 JWT입니다."),
+    // 주식 관련 응답
+    STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK4001", "주식을 찾을수 없습니다.");
 
 
-    // 요약문 관련 응답
-    SUMMARY_NOT_FOUND(HttpStatus.NOT_FOUND, "SUMMARY4001", "요약본을 찾을수 없습니다."),
-
-
-    // 센터 관련 응답
-    CENTER_NOT_FOUND(HttpStatus.NOT_FOUND,"CENTER4001", "센터를 찾을수 없습니다."),
-    LANGUAGE_NOT_MATCHING(HttpStatus.NOT_FOUND, "CENTER4003", "해당 언어의 상담사가 없습니다.");
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
