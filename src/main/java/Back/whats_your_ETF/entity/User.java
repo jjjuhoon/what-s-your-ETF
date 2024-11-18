@@ -38,12 +38,6 @@ public class User {
     @Column(name = "subscriber_count")
     private Long subscriberCount;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "is_in_top_10", nullable = false)
     private Boolean isInTop10;
 

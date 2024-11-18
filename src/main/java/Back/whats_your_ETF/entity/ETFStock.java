@@ -1,5 +1,6 @@
 package Back.whats_your_ETF.entity;
 
+import Back.whats_your_ETF.global.BasicEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ETFStock {
+public class ETFStock extends BasicEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,12 +30,6 @@ public class ETFStock {
 
     @Column(name = "percentage")
     private Double percentage;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "sell_at")
     private LocalDateTime sellAt;

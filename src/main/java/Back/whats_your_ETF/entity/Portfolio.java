@@ -1,5 +1,6 @@
 package Back.whats_your_ETF.entity;
 
+import Back.whats_your_ETF.global.BasicEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Portfolio {
+public class Portfolio extends BasicEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +33,6 @@ public class Portfolio {
 
     @Column(name = "invest_amount")
     private Long investAmount;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "is_etf", nullable = false)
     private Boolean isEtf;

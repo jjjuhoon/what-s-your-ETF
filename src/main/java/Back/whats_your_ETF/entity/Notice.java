@@ -1,5 +1,6 @@
 package Back.whats_your_ETF.entity;
 
+import Back.whats_your_ETF.global.BasicEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notice {
+public class Notice extends BasicEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
