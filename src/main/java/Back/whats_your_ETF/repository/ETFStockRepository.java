@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface ETFStockRepository extends JpaRepository<ETFStock, Long> {
+
     @Query("SELECT e FROM ETFStock e WHERE e.portfolio.id = :portfolioId")
-    List<ETFStock> findAllByPortfolioId(@Param("portfolio_id") Long portfolioId);
+    List<ETFStock> findAllByPortfolioId(@Param("portfolioId") Long portfolioId);
 }
