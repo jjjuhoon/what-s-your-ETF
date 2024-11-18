@@ -47,14 +47,16 @@ public class User {
     @Column(name = "is_in_top_10", nullable = false)
     private Boolean isInTop10;
 
-//    // 알림(Notice)와의 1:N 관계 설정
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Notice> notices;
-//
-//    // 구독(Subscribe)와의 관계 설정
-//    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Subscribe> subscriptions;
-//
-//    @OneToMany(mappedBy = "publisher", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Subscribe> subscribers;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Portfolio> portfolioss;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notice> notices;
+
+    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Subscribe> subscriptions;
+
+    @OneToMany(mappedBy = "publisher", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Subscribe> subscribers;
+
 }
