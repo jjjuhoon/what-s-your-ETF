@@ -23,7 +23,8 @@ ErrorStatus implements BaseErrorCode {
     // 사용자 관련 응답
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4001", "사용자를 찾을수 없습니다."),
     // 주식 관련 응답
-    STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK4001", "주식을 찾을수 없습니다.");
+    STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK4001", "주식을 찾을수 없습니다."),
+    INSUFFICIENT_FUNDS(HttpStatus.NOT_FOUND, "STOCK4002", "총 자산이 부족합니다.");
 
 
     private final HttpStatus httpStatus;

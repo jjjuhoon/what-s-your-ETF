@@ -26,17 +26,35 @@ public class EtfService {
 
     @Transactional
     public void buyETF(Long userId, EtfRequest.etfInvestList etfInvestList) {
+        // 1. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
-        Portfolio portfolio = portfolioRepository.findByUserAndIsEtfTrue(user)
-                .orElseGet(() -> portfolioRepository.save(Portfolio.builder()
-                        .user(user)
-                        .title("ETF Portfolio")
-                        .isEtf(true)
-                        .build()));
+        // 2. 새로운 포트폴리오 생성
+        Portfolio portfolio = portfolioRepository.save(Portfolio.builder()
+                .user(user)
+                .title(etfInvestList.getTitle())
+                .isEtf(true)
+                .build());
 
-        for (EtfRequest.etfInvest etfInvest : etfInvestList.getEtfList()) {
+        // 3. 총 투자 금액 계산
+        long totalInvestment = etfInvestList.getEtfList().stream()
+                .mapToLong(EtfRequest.etfInvest::getPrice)
+                .sum();
+
+        // 4. 투자 금액만큼 사용자 자산 감소
+        if (user.getAsset() < totalInvestment) {
+            throw new GeneralException(ErrorStatus.INSUFFICIENT_FUNDS); // 자산 부족 예외 처리
+        }
+        user.setAsset(user.getAsset() - totalInvestment);
+        userRepository.save(user); // 사용자 자산 업데이트
+
+        // 5. 포트폴리오의 투자 금액 업데이트
+        portfolio.setInvestAmount(totalInvestment);
+        portfolioRepository.save(portfolio);
+
+        // 6. 각 ETF 투자 항목 저장
+        etfInvestList.getEtfList().forEach(etfInvest -> {
             Stock stock = stockRepository.findByStockCode(etfInvest.getStockCode())
                     .orElseThrow(() -> new GeneralException(ErrorStatus.STOCK_NOT_FOUND));
 
@@ -48,6 +66,7 @@ public class EtfService {
                     .build();
 
             etfStockRepository.save(etfStock);
-        }
+        });
     }
+
 }
