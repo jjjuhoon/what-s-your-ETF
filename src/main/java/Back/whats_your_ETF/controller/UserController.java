@@ -28,6 +28,19 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+feat/#7-User
+    //멤버십 가입하기
+    @PostMapping("/membership/{user_id}")
+    public ResponseEntity<String> updateMembership(@PathVariable("user_id") Long userId) {
+        boolean updated = userService.updateMembership(userId);
+
+        if (updated) {
+            return ResponseEntity.ok("회원 상태로 업데이트되었습니다.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     //1.2.1 : 나의 거래내역 가져오기
     @GetMapping("/tradehistory/{user_id}")
     public ResponseEntity<List<TradeHistoryResponse>> getTradeHistory(@PathVariable("user_id") Long userId) {
@@ -43,6 +56,5 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
 }
