@@ -2,15 +2,12 @@ package Back.whats_your_ETF.controller;
 
 import Back.whats_your_ETF.dto.ETFlistResponse;
 import Back.whats_your_ETF.dto.TradeHistoryResponse;
-import Back.whats_your_ETF.entity.User;
 import Back.whats_your_ETF.dto.UserResponse;
 import Back.whats_your_ETF.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.PublicKey;
 import java.util.List;
 
 @RestController
@@ -28,7 +25,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-feat/#7-User
     //멤버십 가입하기
     @PostMapping("/membership/{user_id}")
     public ResponseEntity<String> updateMembership(@PathVariable("user_id") Long userId) {

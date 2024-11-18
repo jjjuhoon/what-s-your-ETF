@@ -18,14 +18,11 @@ public class SubscribeController {
 
     private final SubscribeService subscribeService;
 
+    //1.4.1 구독 목록 가져오기
     @GetMapping("/list/{user_id}")
-    public ResponseEntity<List<SubscribeResponse>> getSubscriptions(@PathVariable("user_id") Long userId){
-        List<SubscribeResponse> subscriptions = subscribeService.getSubscriptionsByUserId(userId);
-
-        if (subscriptions.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 구독 목록이 없을 경우 204 응답
-        }
-
-        return ResponseEntity.ok(subscriptions); // 성공적으로 구독 목록 반환
+    public ResponseEntity<List<SubscribeResponse>> getSubscriptions(@PathVariable("user_id") Long userId) {
+        return subscribeService.getSubscriptionsByUserId(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }
