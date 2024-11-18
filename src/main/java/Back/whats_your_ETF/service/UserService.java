@@ -41,7 +41,7 @@ public class UserService {
     // 1.2.1 : 나의 거래내역 가져오기
     public Optional<List<TradeHistoryResponse>> getTradeHistoryById(Long userId) {
 
-        List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
+        List<Portfolio> portfolios = portfolioRepository.findByUserIdAndIsEtf(userId);
 
         if (portfolios.isEmpty()) {
             return Optional.empty();
@@ -77,7 +77,7 @@ public class UserService {
     }
 
     // 1.3.1 : 나의 ETF목록 가져오기
-    public Optional<ETFlistResponse> getUserETFlistById(Long userId) {
+    public Optional<PortfolioListResponse> getUserETFlistById(Long userId) {
 
         List<Portfolio> portfolios = portfolioRepository.findByUserIdAndIsEtf(userId);
 
@@ -94,7 +94,7 @@ public class UserService {
                 ))
                 .collect(Collectors.toList());
 
-        ETFlistResponse etflistResponse = new ETFlistResponse(portfolioResponses);
+        PortfolioListResponse etflistResponse = new PortfolioListResponse(portfolioResponses);
 
         return Optional.of(etflistResponse);
     }

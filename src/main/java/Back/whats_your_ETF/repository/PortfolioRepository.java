@@ -12,9 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
-    List<Portfolio> findByUserId(Long userId);
 
+    Optional<Portfolio> findById(Long portfolioId);
 
+    //내가 매도한 portfolio만 보여줄때
     @Query("SELECT p FROM Portfolio p WHERE p.user.id = :userId AND p.isEtf = true")
     List<Portfolio> findByUserIdAndIsEtf(@Param("userId") Long userId);
 }
