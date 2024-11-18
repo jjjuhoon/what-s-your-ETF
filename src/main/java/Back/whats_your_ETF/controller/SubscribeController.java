@@ -4,10 +4,7 @@ import Back.whats_your_ETF.dto.SubscribeResponse;
 import Back.whats_your_ETF.service.SubscribeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +21,17 @@ public class SubscribeController {
         return subscribeService.getSubscriptionsByUserId(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
+    }
+
+    //1.4.3 구독 취소하기
+    @DeleteMapping("/{subscriber_id}/{publisher_id}")
+    public ResponseEntity<String> unsubscribe(@PathVariable("subscriber_id") Long subscriberId, @PathVariable("publisher_id") Long publisherId) {
+        boolean success = subscribeService.unsubscribe(subscriberId, publisherId);
+
+        if (success) {
+            return ResponseEntity.ok("구독 취소 성공");
+        } else {
+            return ResponseEntity.badRequest().body("구독 관계가 존재하지 않습니다");
+        }
     }
 }

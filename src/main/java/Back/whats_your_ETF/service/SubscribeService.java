@@ -3,6 +3,7 @@ package Back.whats_your_ETF.service;
 import Back.whats_your_ETF.dto.SubscribeResponse;
 import Back.whats_your_ETF.entity.Subscribe;
 import Back.whats_your_ETF.repository.SubscribeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -15,6 +16,7 @@ public class SubscribeService {
 
     private final SubscribeRepository subscribeRepository;
 
+    //구독 목록 조회
     public Optional<List<SubscribeResponse>> getSubscriptionsByUserId(Long userId) {
 
         List<Subscribe> subscriptions = subscribeRepository.findAllBySubscriberId(userId);
@@ -32,5 +34,15 @@ public class SubscribeService {
                 .collect(Collectors.toList());
 
         return Optional.of(responses);
+    }
+
+    //구독 목록 삭제
+    @Transactional
+    public boolean unsubscribe(Long subscriberId, Long publisherId) {
+        if (subscribeRepository.existsBySubscriberIdAndPublisherId(subscriberId, publisherId)) {
+            subscribeRepository.deleteBySubscriberIdAndPublisherId(subscriberId, publisherId);
+            return true; // 구독 취소 성공
+        }
+        return false; // 구독 관계가 존재하지 않음
     }
 }
