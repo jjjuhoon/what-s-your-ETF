@@ -1,8 +1,6 @@
 package Back.whats_your_ETF.service;
 
-import Back.whats_your_ETF.dto.StockResponse;
-import Back.whats_your_ETF.dto.TradeHistoryResponse;
-import Back.whats_your_ETF.dto.UserResponse;
+import Back.whats_your_ETF.dto.*;
 import Back.whats_your_ETF.entity.ETFStock;
 import Back.whats_your_ETF.entity.Portfolio;
 import Back.whats_your_ETF.repository.ETFStockRepository;
@@ -38,7 +36,7 @@ public class UserService {
                 ));
     }
 
-    ////1.2.1 : 나의 거래내역 가져오기
+    // 1.2.1 : 나의 거래내역 가져오기
     public Optional<List<TradeHistoryResponse>> getTradeHistoryById(Long userId) {
 
         List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
@@ -47,7 +45,7 @@ public class UserService {
             return Optional.empty();
         }
 
-        //Portfolio 최신순 정렬
+        // Portfolio 최신순 정렬
         List<TradeHistoryResponse> tradeHistoryResponses = portfolios.stream()
                 .sorted(Comparator.comparing(Portfolio::getCreatedAt).reversed())
                 .map(portfolio -> {
@@ -56,27 +54,46 @@ public class UserService {
                     // ETFStock 최신순 정렬
                     List<StockResponse> stockResponses = etfStocks.stream()
                             .sorted(Comparator.comparing(ETFStock::getCreatedAt).reversed())
-                            .map(etfStock -> StockResponse.builder()
-                                    .stockCode(etfStock.getStock().getStockCode())
-                                    .stockName(etfStock.getStock().getStockName())
-                                    .percentage(etfStock.getPercentage())
-                                    .build()
-                            )
+                            .map(etfStock -> new StockResponse(
+                                    etfStock.getStock().getStockCode(),
+                                    etfStock.getStock().getStockName(),
+                                    etfStock.getPercentage()
+                            ))
                             .collect(Collectors.toList());
 
-                    return TradeHistoryResponse.builder()
-                            .portfolioId(portfolio.getId())
-                            .title(portfolio.getTitle())
-                            .revenue(portfolio.getRevenue())
-                            .investAmount(portfolio.getInvestAmount())
-                            .stocks(stockResponses)
-                            .build();
+                    return new TradeHistoryResponse(
+                            portfolio.getId(),
+                            portfolio.getTitle(),
+                            portfolio.getRevenue(),
+                            portfolio.getInvestAmount(),
+                            stockResponses
+                    );
                 })
                 .collect(Collectors.toList());
 
         return Optional.of(tradeHistoryResponses);
     }
 
+    // 1.3.1 : 나의 ETF목록 가져오기
+    public Optional<ETFlistResponse> getUserETFlistById(Long userId) {
 
+        List<Portfolio> portfolios = portfolioRepository.findByUserIdAndIsEtf(userId);
 
+        if (portfolios.isEmpty()) {
+            return Optional.empty();
+        }
+
+        List<PortfolioResponse> portfolioResponses = portfolios.stream()
+                .map(portfolio -> new PortfolioResponse(
+                        portfolio.getId(),
+                        portfolio.getTitle(),
+                        portfolio.getRevenue(),
+                        portfolio.getInvestAmount()
+                ))
+                .collect(Collectors.toList());
+
+        ETFlistResponse etflistResponse = new ETFlistResponse(portfolioResponses);
+
+        return Optional.of(etflistResponse);
+    }
 }
