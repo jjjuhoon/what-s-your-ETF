@@ -2,6 +2,7 @@ package Back.whats_your_ETF.controller;
 
 import Back.whats_your_ETF.dto.EtfRequest;
 import Back.whats_your_ETF.dto.PortfolioDetailsResponse;
+import Back.whats_your_ETF.dto.PortfolioListResponse;
 import Back.whats_your_ETF.service.EtfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,14 @@ public class EtfController {
         etfService.sellETF(portfolioId);
         return ResponseEntity.ok().build();
     }
+
+    //2.1.1 포트폴리오 revenue 높은순으로 가져오기
+    @GetMapping("/ranklist")
+    public ResponseEntity<PortfolioListResponse> getPortfolioRank() {
+        PortfolioListResponse response = etfService.getPortfolioRank();
+        return ResponseEntity.ok(response);
+    }
+
 
 
 }
