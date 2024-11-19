@@ -2,9 +2,7 @@ package Back.whats_your_ETF.service;
 
 import Back.whats_your_ETF.apiPayload.GeneralException;
 import Back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
-import Back.whats_your_ETF.dto.ETFStockResponse;
-import Back.whats_your_ETF.dto.EtfRequest;
-import Back.whats_your_ETF.dto.PortfolioDetailsResponse;
+import Back.whats_your_ETF.dto.*;
 import Back.whats_your_ETF.entity.ETFStock;
 import Back.whats_your_ETF.entity.Portfolio;
 import Back.whats_your_ETF.entity.Stock;
@@ -134,4 +132,19 @@ public class EtfService {
         return Optional.of(response);
     }
 
+    //2.1.1 포트폴리오 랭킹별로 가져오기
+    public PortfolioListResponse getPortfolioRank() {
+        List<Portfolio> portfolios = portfolioRepository.findAllOrderByRevenueDesc();
+
+        List<PortfolioResponse> portfolioResponses = portfolios.stream()
+                .map(portfolio -> new PortfolioResponse(
+                        portfolio.getId(),
+                        portfolio.getTitle(),
+                        portfolio.getRevenue(),
+                        portfolio.getInvestAmount()
+                ))
+                .collect(Collectors.toList());
+
+        return new PortfolioListResponse(portfolioResponses);
+    }
 }

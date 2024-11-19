@@ -18,4 +18,8 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     //내가 매도한 portfolio만 보여줄때
     @Query("SELECT p FROM Portfolio p WHERE p.user.id = :userId AND p.isEtf = true")
     List<Portfolio> findByUserIdAndIsEtf(@Param("userId") Long userId);
+
+    //포트폴리오 수익률별로 가져오기
+    @Query("SELECT p FROM Portfolio p ORDER BY p.revenue DESC")
+    List<Portfolio> findAllOrderByRevenueDesc();
 }
