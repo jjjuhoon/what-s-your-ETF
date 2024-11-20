@@ -2,7 +2,7 @@ package Back.whats_your_ETF.service;
 
 import Back.whats_your_ETF.apiPayload.GeneralException;
 import Back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
-import Back.whats_your_ETF.dto.EtfRequest;
+import Back.whats_your_ETF.dto.*;
 import Back.whats_your_ETF.entity.ETFStock;
 import Back.whats_your_ETF.entity.Portfolio;
 import Back.whats_your_ETF.entity.Stock;
@@ -14,6 +14,11 @@ import Back.whats_your_ETF.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,4 +100,89 @@ public class EtfService {
         portfolioRepository.delete(portfolio);
     }
 
+
+    public Optional<PortfolioDetailsResponse> getPortfolioDetailsByPortfolioId(Long portfolioId) {
+
+        Optional<Portfolio> portfolioOptional = portfolioRepository.findById(portfolioId);
+
+        if (portfolioOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Portfolio portfolio = portfolioOptional.get();
+
+        List<ETFStock> etfStocks = etfStockRepository.findAllByPortfolioId(portfolioId);
+
+        List<ETFStockResponse> etfStockResponses = etfStocks.stream()
+                .map(etfStock -> new ETFStockResponse(
+                        etfStock.getStock().getStockCode(),
+                        etfStock.getStock().getStockName(),
+                        etfStock.getPercentage(),
+                        etfStock.getPurchasePrice()
+                ))
+                .collect(Collectors.toList());
+
+        PortfolioDetailsResponse response = new PortfolioDetailsResponse(
+                portfolio.getId(),
+                portfolio.getTitle(),
+                portfolio.getRevenue(),
+                portfolio.getInvestAmount(),
+                etfStockResponses
+        );
+
+        return Optional.of(response);
+    }
+
+    //2.1.1 포트폴리오 랭킹별로 가져오기
+    public PortfolioListResponse getPortfolioRank() {
+        List<Portfolio> portfolios = portfolioRepository.findAllOrderByRevenueDesc();
+
+        List<PortfolioResponse> portfolioResponses = portfolios.stream()
+                .map(portfolio -> new PortfolioResponse(
+                        portfolio.getId(),
+                        portfolio.getTitle(),
+                        portfolio.getRevenue(),
+                        portfolio.getInvestAmount()
+                ))
+                .collect(Collectors.toList());
+
+        return new PortfolioListResponse(portfolioResponses);
+    }
+
+    //2.1.2 : 수익률 높은순으로 유저 랭킹
+    public List<UserRankingResponse> getUserRanking() {
+
+        List<User> users = portfolioRepository.findAllUsersWithPortfolios();
+
+        List<UserRankingResponse> userRankings = users.stream()
+                .map(user -> {
+                    List<Portfolio> portfolios = user.getPortfolioss();
+
+                    long totalInvestAmount = portfolios.stream()
+                            .mapToLong(Portfolio::getInvestAmount)
+                            .sum();
+
+                    double totalRevenue = portfolios.stream()
+                            .flatMap(portfolio -> portfolio.getEtfStocks().stream())
+                            .mapToDouble(etfStock -> {
+                                Stock stock = etfStock.getStock();
+                                return (stock.getPrice() - etfStock.getPurchasePrice()) * etfStock.getPercentage();
+                            })
+                            .sum();
+
+                    double revenuePercentage = (totalInvestAmount > 0)
+                            ? (totalRevenue / totalInvestAmount) * 100
+                            : 0.0;
+
+                    return new UserRankingResponse(
+                            user.getId(),
+                            user.getNickname(),
+                            revenuePercentage
+                    );
+                })
+                .sorted(Comparator.comparingDouble(UserRankingResponse::revenuePercentage).reversed())
+                .collect(Collectors.toList());
+
+        return userRankings;
+    }
 }
