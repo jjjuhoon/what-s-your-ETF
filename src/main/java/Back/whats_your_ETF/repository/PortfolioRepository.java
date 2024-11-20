@@ -22,4 +22,8 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     //포트폴리오 수익률별로 가져오기
     @Query("SELECT p FROM Portfolio p ORDER BY p.revenue DESC")
     List<Portfolio> findAllOrderByRevenueDesc();
+
+    //유저와 포트폴리오를 함께 가져오기
+    @Query("SELECT DISTINCT u FROM User u JOIN FETCH u.portfolioss")
+    List<User> findAllUsersWithPortfolios();
 }
