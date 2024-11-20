@@ -7,16 +7,14 @@ import Back.whats_your_ETF.entity.ETFStock;
 import Back.whats_your_ETF.entity.Portfolio;
 import Back.whats_your_ETF.entity.Stock;
 import Back.whats_your_ETF.entity.User;
-import Back.whats_your_ETF.repository.ETFStockRepository;
-import Back.whats_your_ETF.repository.PortfolioRepository;
-import Back.whats_your_ETF.repository.StockRepository;
-import Back.whats_your_ETF.repository.UserRepository;
+import Back.whats_your_ETF.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,6 +26,7 @@ public class EtfService {
     private final StockRepository stockRepository;
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
+    private final RankingRepository rankingRepository;
 
 
     @Transactional
@@ -149,6 +148,23 @@ public class EtfService {
         return new PortfolioListResponse(portfolioResponses);
     }
 
+    //2.1.2 : 수익률 높은순으로 유저 랭킹 (Portfolio 수익률 계산 메서드)
+    // Portfolio 수익률 계산 메서드
+    public double calculatePortfolioRevenue(Portfolio portfolio) {
+        return portfolio.getEtfStocks().stream()
+                .mapToDouble(etfStock -> {
+                    // Stock의 종목 코드를 기준으로 Ranking 테이블에서 currentPrice 조회
+                    String stockCode = etfStock.getStock().getStockCode();
+                    Long currentPrice = rankingRepository.findCurrentPriceByStockCode(stockCode)
+                            .orElse(etfStock.getPurchasePrice()); // currentPrice가 없으면 purchasePrice를 사용
+
+                    // 수익률 계산
+                    return (currentPrice - etfStock.getPurchasePrice()) * etfStock.getPercentage();
+                })
+                .sum();
+    }
+
+
     //2.1.2 : 수익률 높은순으로 유저 랭킹
     public List<UserRankingResponse> getUserRanking() {
 
@@ -163,11 +179,7 @@ public class EtfService {
                             .sum();
 
                     double totalRevenue = portfolios.stream()
-                            .flatMap(portfolio -> portfolio.getEtfStocks().stream())
-                            .mapToDouble(etfStock -> {
-                                Stock stock = etfStock.getStock();
-                                return (stock.getPrice() - etfStock.getPurchasePrice()) * etfStock.getPercentage();
-                            })
+                            .mapToDouble(this::calculatePortfolioRevenue)
                             .sum();
 
                     double revenuePercentage = (totalInvestAmount > 0)
@@ -185,4 +197,5 @@ public class EtfService {
 
         return userRankings;
     }
+
 }

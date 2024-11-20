@@ -29,7 +29,7 @@ public class Portfolio extends BasicEntity {
     private String title;
 
     @Column(name = "revenue")
-    private Long revenue;
+    private Double revenue;
 
     @Column(name = "invest_amount")
     private Long investAmount;

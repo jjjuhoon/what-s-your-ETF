@@ -5,6 +5,6 @@ import lombok.*;
 public record PortfolioResponse(
         Long portfolioId,
         String title,
-        Long revenue,
+        Double revenue,
         Long investAmount
 ) {}
