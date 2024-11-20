@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -146,5 +147,42 @@ public class EtfService {
                 .collect(Collectors.toList());
 
         return new PortfolioListResponse(portfolioResponses);
+    }
+
+    //2.1.2 : 수익률 높은순으로 유저 랭킹
+    public List<UserRankingResponse> getUserRanking() {
+
+        List<User> users = portfolioRepository.findAllUsersWithPortfolios();
+
+        List<UserRankingResponse> userRankings = users.stream()
+                .map(user -> {
+                    List<Portfolio> portfolios = user.getPortfolioss();
+
+                    long totalInvestAmount = portfolios.stream()
+                            .mapToLong(Portfolio::getInvestAmount)
+                            .sum();
+
+                    double totalRevenue = portfolios.stream()
+                            .flatMap(portfolio -> portfolio.getEtfStocks().stream())
+                            .mapToDouble(etfStock -> {
+                                Stock stock = etfStock.getStock();
+                                return (stock.getPrice() - etfStock.getPurchasePrice()) * etfStock.getPercentage();
+                            })
+                            .sum();
+
+                    double revenuePercentage = (totalInvestAmount > 0)
+                            ? (totalRevenue / totalInvestAmount) * 100
+                            : 0.0;
+
+                    return new UserRankingResponse(
+                            user.getId(),
+                            user.getNickname(),
+                            revenuePercentage
+                    );
+                })
+                .sorted(Comparator.comparingDouble(UserRankingResponse::revenuePercentage).reversed())
+                .collect(Collectors.toList());
+
+        return userRankings;
     }
 }

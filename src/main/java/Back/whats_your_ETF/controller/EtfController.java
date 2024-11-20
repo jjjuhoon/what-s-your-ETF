@@ -3,10 +3,13 @@ package Back.whats_your_ETF.controller;
 import Back.whats_your_ETF.dto.EtfRequest;
 import Back.whats_your_ETF.dto.PortfolioDetailsResponse;
 import Back.whats_your_ETF.dto.PortfolioListResponse;
+import Back.whats_your_ETF.dto.UserRankingResponse;
 import Back.whats_your_ETF.service.EtfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +46,13 @@ public class EtfController {
     public ResponseEntity<PortfolioListResponse> getPortfolioRank() {
         PortfolioListResponse response = etfService.getPortfolioRank();
         return ResponseEntity.ok(response);
+    }
+
+    //2.1.2 수익률 높은순으로 유저 랭킹
+    @GetMapping("/user/ranking")
+    public ResponseEntity<List<UserRankingResponse>> getUserRankings() {
+        List<UserRankingResponse> rankings = etfService.getUserRanking();
+        return ResponseEntity.ok(rankings);
     }
 
 
