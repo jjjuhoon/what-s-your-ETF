@@ -45,5 +45,5 @@ tasks.named('test') {
 }
 
 bootJar {
-	mainClassName = 'Back.whats_your_etf.WhatsYourEtfApplication'
+	mainClassName = 'Back.whats_your_ETF.WhatsYourEtfApplication'
 }
