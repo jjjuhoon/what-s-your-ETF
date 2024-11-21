@@ -41,6 +41,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             # 최신 Spring Boot Docker 이미지 Pull
             echo "Pulling latest Spring Boot app image..."
