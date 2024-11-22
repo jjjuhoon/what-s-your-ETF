@@ -5,7 +5,7 @@ import java.util.List;
 public record PortfolioDetailsResponse(
         Long portfolioId,
         String title,
-        Long revenue,
+        Double revenue,
         Long investAmount,
         List<ETFStockResponse> etfStocks
 ) {}

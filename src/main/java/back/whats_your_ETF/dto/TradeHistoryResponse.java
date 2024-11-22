@@ -5,7 +5,7 @@ import java.util.List;
 public record TradeHistoryResponse(
         Long portfolioId,
         String title,
-        Long revenue,
+        Double revenue,
         Long investAmount,
         List<StockResponse> stocks
 ) {}
