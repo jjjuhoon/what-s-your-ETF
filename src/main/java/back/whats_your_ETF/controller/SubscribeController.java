@@ -23,15 +23,17 @@ public class SubscribeController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    //1.4.3 구독 취소하기
-    @DeleteMapping("/{subscriber_id}/{publisher_id}")
-    public ResponseEntity<String> unsubscribe(@PathVariable("subscriber_id") Long subscriberId, @PathVariable("publisher_id") Long publisherId) {
-        boolean success = subscribeService.unsubscribe(subscriberId, publisherId);
+    // 1.4.5구독하기
+    @PostMapping("/{subscriberId}/{publisherId}")
+    public ResponseEntity<Void> subscribe(@PathVariable Long subscriberId, @PathVariable Long publisherId) {
+        subscribeService.subscribe(subscriberId, publisherId);
+        return ResponseEntity.ok().build();
+    }
 
-        if (success) {
-            return ResponseEntity.ok("구독 취소 성공");
-        } else {
-            return ResponseEntity.badRequest().body("구독 관계가 존재하지 않습니다");
-        }
+    // 1.4.3 구독 취소하기
+    @DeleteMapping("/{subscriberId}/{publisherId}")
+    public ResponseEntity<Void> unsubscribe(@PathVariable Long subscriberId, @PathVariable Long publisherId) {
+        subscribeService.unsubscribe(subscriberId, publisherId);
+        return ResponseEntity.ok().build();
     }
 }
