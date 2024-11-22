@@ -1,16 +1,16 @@
 spring:
+
+  config:
+    import: optional:file:.env
+
   datasource:
-    url: jdbc:mysql://localhost:3306/minji_db
-    username: root
-    password: 1234
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: ${SPRING_DATASOURCE_URL}
-#    username: ${SPRING_DATASOURCE_USERNAME}
-#    password: ${SPRING_DATASOURCE_PASSWORD}
-#    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
@@ -22,7 +22,12 @@ spring:
 #server:
 #  port: ${PORT}
 
+
 logging:
   level:
     root: info
     org.springframework.web: debug
+
+
+appkey: ${APP_KEY}
+appsecret: ${APP_SECRET}

@@ -2,6 +2,7 @@ package back.whats_your_ETF.service;
 
 import back.whats_your_ETF.entity.Ranking;
 import back.whats_your_ETF.repository.RankingRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -10,8 +11,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+
 @Service
 @RequiredArgsConstructor
+@Component
 public class RankingService {
 
     private final RankingRepository rankingRepository;
@@ -23,16 +29,20 @@ public class RankingService {
     private static final String PROFIT_ASSET_RANK_API_URL = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/ranking/profit-asset-index";
     private static final String MARKET_CAP_RANK_API_URL = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/ranking/market-cap";
 
-    private static final String APP_KEY = "PSmqu4Sv0FyEaup0qheHCN8ypL0y7L7jMx2R";
-    private static final String APP_SECRET = "VeF7GB6itEg6Oax5N9TrSg31PF6+9lAsFyRiH3uDCNQE89fpTRjxyp1Q8DcAcef0gZNVDI/AwiaOUHDC0yqIZVnbKhHhuU84gRkz16p3XrAXnDLHLU+XlEjvSeJZh+/8kxE0tfLkKTz6oNCXT5H5qzFvThgdvuQkCMt15Ifja7/ksD6AtG8=";
+
+    @Value("${APP_KEY}")
+    private String appKey;
+
+    @Value("${APP_SECRET}")
+    private String appSecret;
 
     private HttpHeaders createHeaders(String trId) {
         String accessToken = authService.getAccessToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("authorization", "Bearer " + accessToken);
-        headers.set("appkey", APP_KEY);
-        headers.set("appsecret", APP_SECRET);
+        headers.set("appkey", appKey);
+        headers.set("appsecret", appSecret);
         headers.set("tr_id", trId);
         headers.set("custtype", "P");
         return headers;
