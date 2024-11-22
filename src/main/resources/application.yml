@@ -19,8 +19,8 @@ spring:
     init:
       mode: always
 
-server:
-  port: ${PORT}
+#server:
+#  port: ${PORT}
 
 logging:
   level:
