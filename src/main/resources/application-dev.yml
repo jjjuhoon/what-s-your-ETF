@@ -4,10 +4,11 @@ spring:
     import: optional:file:.env
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:mysql://localhost:3306/minji_db
+    username: root
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: create
@@ -20,8 +21,7 @@ spring:
       mode: always
 
 server:
-  port: ${PORT}
-
+  port: 8080
 
 logging:
   level:
@@ -29,5 +29,5 @@ logging:
     org.springframework.web: debug
 
 
-appkey: ${APP_KEY}
-appsecret: ${APP_SECRET}
+APP_KEY: "PSmqu4Sv0FyEaup0qheHCN8ypL0y7L7jMx2R"
+APP_SECRET: "VeF7GB6itEg6Oax5N9TrSg31PF6+9lAsFyRiH3uDCNQE89fpTRjxyp1Q8DcAcef0gZNVDI/AwiaOUHDC0yqIZVnbKhHhuU84gRkz16p3XrAXnDLHLU+XlEjvSeJZh+/8kxE0tfLkKTz6oNCXT5H5qzFvThgdvuQkCMt15Ifja7/ksD6AtG8="
