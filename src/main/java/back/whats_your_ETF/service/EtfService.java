@@ -203,6 +203,8 @@ public class EtfService {
                     return new UserRankingResponse(
                             user.getId(),
                             user.getNickname(),
+                            user.getImage(),
+                            totalRevenue,
                             revenuePercentage
                     );
                 })
