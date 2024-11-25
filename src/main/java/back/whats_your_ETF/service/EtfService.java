@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -185,9 +187,13 @@ public class EtfService {
         }
 
         double revenuePercentage = calculateUserRevenuePercentage(user);
+        double roundedRevenuePercentage = BigDecimal.valueOf(revenuePercentage)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
 
-        return Optional.of(revenuePercentage);
+        return Optional.of(roundedRevenuePercentage);
     }
+
 
 
     // 유저 한 명의 revenuePercentage 계산 메서드
