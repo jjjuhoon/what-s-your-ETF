@@ -18,7 +18,7 @@ import java.util.List;
 public class SearchController {
 
     private final SearchService searchService;
-    private final RankingRepository rankingRepository; // DB에서 종목 정보 조회
+    private final RankingRepository rankingRepository;
 
     // 검색
     @GetMapping
