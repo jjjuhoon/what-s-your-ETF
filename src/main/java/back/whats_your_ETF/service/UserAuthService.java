@@ -29,11 +29,6 @@ public class UserAuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public boolean shouldRefreshRefreshToken(String refreshToken) {
-        long remainingTime = jwtUtil.extractClaims(refreshToken).getExpiration().getTime() - System.currentTimeMillis();
-        return remainingTime < (1000 * 60 * 60 * 24); // 만료까지 1일 미만이면 갱신
-    }
-
     // 사용자 인증 및 토큰 발급
     public TokenPair authenticate(String userId, String password) {
         // 사용자 확인
@@ -60,19 +55,6 @@ public class UserAuthService {
         saveOrUpdateRefreshToken(userId, tokenPair.getRefreshToken());
 
         return tokenPair;
-    }
-
-    public TokenPair refreshAccessToken(String refreshToken) {
-        // Refresh Token 유효성 검사
-        String userId = jwtUtil.extractUserId(refreshToken);
-
-        if (jwtUtil.isTokenExpired(refreshToken) || !validateRefreshToken(userId, refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 또는 만료된 RefreshToken입니다.");
-        }
-
-        // 새로운 Access Token 발급
-        String newAccessToken = jwtUtil.generateAccessToken(userId);
-        return new TokenPair(newAccessToken, refreshToken);
     }
 
     public void logoutByRefreshToken(String refreshToken) {
@@ -112,7 +94,7 @@ public class UserAuthService {
     }
 
     // RefreshToken 검증
-    private boolean validateRefreshToken(String userId, String refreshToken) {
+    public boolean validateRefreshToken(String userId, String refreshToken) {
         String storedToken = redisUtil.get(userId);
         return storedToken != null && storedToken.equals(refreshToken);
     }

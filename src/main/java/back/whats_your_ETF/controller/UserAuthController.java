@@ -5,8 +5,10 @@ import back.whats_your_ETF.dto.LoginReqeust;
 import back.whats_your_ETF.dto.SignUpRequest;
 import back.whats_your_ETF.dto.SignUpResponse;
 import back.whats_your_ETF.dto.TokenPair;
+
 import back.whats_your_ETF.service.UserAuthService;
-import org.springframework.http.HttpCookie;
+import back.whats_your_ETF.util.JwtUtil;
+import back.whats_your_ETF.util.RedisUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -18,9 +20,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserAuthController {
 
     private final UserAuthService userAuthService;
+    private final JwtUtil jwtUtil;
 
-    public UserAuthController(UserAuthService userAuthService) {
+    public UserAuthController(UserAuthService userAuthService, JwtUtil jwtUtil, final RedisUtil redisUtil) {
         this.userAuthService = userAuthService;
+        this.jwtUtil = jwtUtil;
     }
 
     // 로그인 - AccessToken과 RefreshToken 반환
@@ -34,7 +38,7 @@ public class UserAuthController {
                 // .secure(true) // HTTPS 환경에서 활성화
                 .path("/")
                 .maxAge(60 * 60) // 1시간
-                // .sameSite("Strict") // HTTPS 환경에서 활성화
+                // .sameSite("Strict")
                 .build();
 
         // RefreshToken 쿠키 설정
@@ -43,7 +47,7 @@ public class UserAuthController {
                 // .secure(true) // HTTPS 환경에서 활성화
                 .path("/")
                 .maxAge(60 * 60 * 24 * 7) // 7일
-                // .sameSite("Strict") // HTTPS 환경에서 활성화
+                // .sameSite("Strict")
                 .build();
 
         // LoginResponse 생성
@@ -86,8 +90,6 @@ public class UserAuthController {
     }
 
 
-
-
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<SignUpResponse> signup(@RequestBody SignUpRequest request) {
@@ -98,40 +100,37 @@ public class UserAuthController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<Void> refresh(@RequestParam String userId, @CookieValue(value = "accessToken", required = false) String accessToken, @CookieValue(value = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // Refresh Token 없으면 400
         }
 
         try {
-            TokenPair newTokenPair = userAuthService.refreshAccessToken(refreshToken);
+            // refresh 토큰이 존재하고, 만료되지 않았을 때
+            if (userAuthService.validateRefreshToken(userId, refreshToken) && !jwtUtil.isTokenExpired(refreshToken)) {
+                // accessToken이 만료되었다면 accessToken을 갱신
+                if (jwtUtil.isTokenExpired(accessToken)) {
+                    String newAccessToken = jwtUtil.generateAccessToken(userId);
 
-            // 새 Access Token 쿠키 설정
-            ResponseCookie accessCookie = ResponseCookie.from("accessToken", newTokenPair.getAccessToken())
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(60 * 60) // 1시간
-                    .build();
+                    ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(60 * 60) // 1시간
+                            .build();
 
-            ResponseCookie refreshCookie = null;
-            if (userAuthService.shouldRefreshRefreshToken(refreshToken)) {
-                refreshCookie = ResponseCookie.from("refreshToken", newTokenPair.getRefreshToken())
-                        .httpOnly(true)
-                        .path("/")
-                        .maxAge(60 * 60 * 24 * 7) // 7일
-                        .build();
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshToken)
+                            .build();
+
+                }
+
+                // 만료 되지 않았다면 accessToken을 갱신하지 않고 아무런 행동도 취하지 않음.
+
             }
 
-            if (refreshCookie != null) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
-                        .build();
-            } else {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                        .build();
-            }
+            // refresh 토큰이 만료되었을 때는 그냥 로그인을 통해서 갱신해야함.
 
+            return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Refresh Token 유효하지 않을 때
         }
