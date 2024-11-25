@@ -29,10 +29,10 @@ public class RedisUtil {
     }
 
     // ----------------------
-    // 최근 검색어 관련 메서드
+    // 최근 검색어 관련 메서드 추가
     // ----------------------
 
-    // 검색어 추가
+    // 검색어 추가 (Sorted Set 사용)
     public void addRecentSearch(String userId, String stockName) {
         String key = "recent_search:" + userId;
         Long score = System.currentTimeMillis(); // 타임스탬프를 점수로 사용

@@ -3,6 +3,7 @@ package back.whats_your_ETF.controller;
 import back.whats_your_ETF.dto.PortfolioListResponse;
 import back.whats_your_ETF.dto.TradeHistoryResponse;
 import back.whats_your_ETF.dto.UserResponse;
+import back.whats_your_ETF.service.EtfService;
 import back.whats_your_ETF.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final EtfService etfService;
 
     // 사용자 정보 불러오기
     @GetMapping("/{user_id}")
@@ -49,6 +51,14 @@ public class UserController {
     @GetMapping("/etf/list/{user_id}")
     public ResponseEntity<PortfolioListResponse> getUserETFlist(@PathVariable("user_id") Long userId) {
         return userService.getUserETFlistById(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 사용자 수익률 조회
+    @GetMapping("/{user_id}/revenue-percentage")
+    public ResponseEntity<Double> getUserRevenuePercentage(@PathVariable("user_id") Long userId) {
+        return etfService.getUserRevenuePercentage(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

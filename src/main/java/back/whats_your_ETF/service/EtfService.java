@@ -178,6 +178,34 @@ public class EtfService {
                 .sum();
     }
 
+    public Optional<Double> getUserRevenuePercentage(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return Optional.empty();
+        }
+
+        double revenuePercentage = calculateUserRevenuePercentage(user);
+
+        return Optional.of(revenuePercentage);
+    }
+
+
+    // 유저 한 명의 revenuePercentage 계산 메서드
+    private double calculateUserRevenuePercentage(User user) {
+        List<Portfolio> portfolios = user.getPortfolioss();
+
+        long totalInvestAmount = portfolios.stream()
+                .mapToLong(Portfolio::getInvestAmount)
+                .sum();
+
+        double totalRevenue = portfolios.stream()
+                .mapToDouble(this::calculatePortfolioRevenue)
+                .sum();
+
+        return (totalInvestAmount > 0)
+                ? (totalRevenue / totalInvestAmount) * 100
+                : 0.0;
+    }
 
     //2.1.2 : 수익률 높은순으로 유저 랭킹
     public List<UserRankingResponse> getUserRanking() {
@@ -186,19 +214,11 @@ public class EtfService {
 
         List<UserRankingResponse> userRankings = users.stream()
                 .map(user -> {
-                    List<Portfolio> portfolios = user.getPortfolioss();
+                    double revenuePercentage = calculateUserRevenuePercentage(user);
 
-                    long totalInvestAmount = portfolios.stream()
-                            .mapToLong(Portfolio::getInvestAmount)
-                            .sum();
-
-                    double totalRevenue = portfolios.stream()
+                    double totalRevenue = user.getPortfolioss().stream()
                             .mapToDouble(this::calculatePortfolioRevenue)
                             .sum();
-
-                    double revenuePercentage = (totalInvestAmount > 0)
-                            ? (totalRevenue / totalInvestAmount) * 100
-                            : 0.0;
 
                     return new UserRankingResponse(
                             user.getId(),
