@@ -69,7 +69,7 @@ private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256)
         return extractClaims(token).getSubject();
     }
 
-    private Claims extractClaims(String token) {
+    public Claims extractClaims(String token) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(SECRET_KEY)

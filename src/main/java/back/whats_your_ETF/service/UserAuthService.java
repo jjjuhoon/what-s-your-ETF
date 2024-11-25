@@ -2,9 +2,7 @@ package back.whats_your_ETF.service;
 
 import back.whats_your_ETF.dto.SignUpRequest;
 import back.whats_your_ETF.dto.TokenPair;
-import back.whats_your_ETF.entity.RefreshToken;
 import back.whats_your_ETF.entity.User;
-import back.whats_your_ETF.repository.RefreshTokenRepository;
 import back.whats_your_ETF.repository.UserRepository;
 import back.whats_your_ETF.util.JwtUtil;
 import back.whats_your_ETF.util.RedisUtil;
@@ -23,6 +21,71 @@ public class UserAuthService {
 
     private static final long REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7; // 7일
 
+    public UserAuthService(JwtUtil jwtUtil, UserRepository userRepository,
+                           RedisUtil redisUtil, PasswordEncoder passwordEncoder) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.redisUtil = redisUtil;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public boolean shouldRefreshRefreshToken(String refreshToken) {
+        long remainingTime = jwtUtil.extractClaims(refreshToken).getExpiration().getTime() - System.currentTimeMillis();
+        return remainingTime < (1000 * 60 * 60 * 24); // 만료까지 1일 미만이면 갱신
+    }
+
+    // 사용자 인증 및 토큰 발급
+    public TokenPair authenticate(String userId, String password) {
+        // 사용자 확인
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadCredentialsException("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+
+        // 기존 Refresh Token 체크
+        String storedToken = redisUtil.get(userId);
+        if (storedToken != null && !jwtUtil.isTokenExpired(storedToken)) {
+            String newAccessToken = jwtUtil.generateAccessToken(userId);
+
+            // 기존 Refresh Token과 새 Access Token 반환
+            return new TokenPair(newAccessToken, storedToken);
+        }
+
+        // AccessToken과 RefreshToken 생성
+        TokenPair tokenPair = jwtUtil.generateToken(userId);
+
+        // RefreshToken 저장 (Redis에 저장하거나 갱신)
+        saveOrUpdateRefreshToken(userId, tokenPair.getRefreshToken());
+
+        return tokenPair;
+    }
+
+    public TokenPair refreshAccessToken(String refreshToken) {
+        // Refresh Token 유효성 검사
+        String userId = jwtUtil.extractUserId(refreshToken);
+
+        if (jwtUtil.isTokenExpired(refreshToken) || !validateRefreshToken(userId, refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않은 또는 만료된 RefreshToken입니다.");
+        }
+
+        // 새로운 Access Token 발급
+        String newAccessToken = jwtUtil.generateAccessToken(userId);
+        return new TokenPair(newAccessToken, refreshToken);
+    }
+
+    public void logoutByRefreshToken(String refreshToken) {
+        // Refresh Token 유효성 검사
+        String userId = jwtUtil.extractUserId(refreshToken);
+        if (!validateRefreshToken(userId, refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않은 Refresh Token");
+        }
+
+        // Refresh Token 삭제 (Redis에서 삭제)
+        redisUtil.delete(userId);
+    }
+
     // 회원가입
     public void signup(SignUpRequest signUpRequest) {
         if (userRepository.findByUserId(signUpRequest.userId()).isPresent()) {
@@ -34,19 +97,13 @@ public class UserAuthService {
                 .password(passwordEncoder.encode(signUpRequest.password()))
                 .nickname(signUpRequest.nickname())
                 .isInTop10(false)
-                .level(0L)
+                .level(1L)
                 .member(false)
+                .asset(0L)
+                .subscriberCount(0L)
                 .build();
 
         userRepository.save(user);
-    }
-
-    public UserAuthService(JwtUtil jwtUtil, UserRepository userRepository,
-                           RedisUtil redisUtil, PasswordEncoder passwordEncoder) {
-        this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
-        this.redisUtil = redisUtil;
-        this.passwordEncoder = passwordEncoder;
     }
 
     // RefreshToken 저장 또는 갱신
@@ -60,34 +117,13 @@ public class UserAuthService {
         return storedToken != null && storedToken.equals(refreshToken);
     }
 
-    // 사용자 인증 및 토큰 발급
-    public TokenPair authenticate(String userId, String password) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("아이디 또는 비밀번호가 잘못되었습니다.");
+    // 중복 체크
+    public boolean checkDuplicate(String field, String value) {
+        if ("userId".equalsIgnoreCase(field)) {
+            return userRepository.findByUserId(value).isPresent();
+        } else if ("nickname".equalsIgnoreCase(field)) {
+            return userRepository.findByNickname(value).isPresent();
         }
-
-        TokenPair tokenPair = jwtUtil.generateToken(userId);
-        saveOrUpdateRefreshToken(userId, tokenPair.getRefreshToken());
-        return tokenPair;
+        throw new IllegalArgumentException("지원하지 않는 필드입니다: " + field);
     }
-
-    // AccessToken 갱신
-    public TokenPair refreshAccessToken(String refreshToken) {
-        String userId = jwtUtil.extractUserId(refreshToken);
-
-        if (!validateRefreshToken(userId, refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 RefreshToken입니다.");
-        }
-
-        if (jwtUtil.isTokenExpired(refreshToken)) {
-            throw new IllegalArgumentException("RefreshToken이 만료되었습니다.");
-        }
-
-        String newAccessToken = jwtUtil.generateAccessToken(userId);
-        return new TokenPair(newAccessToken, refreshToken);
-    }
-
 }
