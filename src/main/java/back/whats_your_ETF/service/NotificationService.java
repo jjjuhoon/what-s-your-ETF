@@ -54,6 +54,18 @@ public class NotificationService {
         }
     }
 
+    // 매일 자정에 alreadySend 초기화
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void resetAlreadySendFlags() {
+        List<Portfolio> portfolios = portfolioRepository.findAll();
+        for (Portfolio portfolio : portfolios) {
+            portfolio.setAlreadySend(false);
+        }
+        portfolioRepository.saveAll(portfolios);
+        System.out.println("알림 전송 플래그 초기화 완료");
+    }
+
     // Portfolio 수익률 변동 알림
     @Scheduled(fixedRate = 5000) // 5초마다 실행
     @Transactional
