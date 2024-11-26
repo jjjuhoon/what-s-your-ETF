@@ -55,7 +55,7 @@ public class NotificationService {
         List<Portfolio> portfolios = portfolioRepository.findAll();
 
         for (Portfolio portfolio : portfolios) {
-            double newRevenue = etfService.calculatePortfolioRevenue(portfolio);
+            double newRevenue = etfService.calculatePortfolioRevenuePercentage(portfolio);
 
             // 수익률 변동 감지
             if (emitterRepository.isRevenueChanged(portfolio.getId(), newRevenue)) {

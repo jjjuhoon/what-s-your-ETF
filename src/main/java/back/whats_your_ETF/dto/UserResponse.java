@@ -7,5 +7,6 @@ public record UserResponse(
         String image,
         Boolean member,
         Long asset,
-        Long subscriberCount
+        Long subscriberCount,
+        double revenue
 ) {}

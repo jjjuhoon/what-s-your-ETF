@@ -23,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PortfolioRepository portfolioRepository;
     private final ETFStockRepository etfStockRepository;
+    private final EtfService etfService;
 
     // 특정 ID로 사용자 정보 조회
     public Optional<UserResponse> getUserById(Long userId) {
@@ -34,7 +35,8 @@ public class UserService {
                         user.getImage(),
                         user.getMember(),
                         user.getAsset(),
-                        user.getSubscriberCount()
+                        user.getSubscriberCount(),
+                        etfService.calculateUserRevenuePercentage(user)
                 ));
     }
 

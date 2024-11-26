@@ -166,7 +166,7 @@ public class EtfService {
 
     //2.1.2 : 수익률 높은순으로 유저 랭킹 (Portfolio 수익률 계산 메서드)
     // Portfolio 수익률 계산 메서드
-    public double calculatePortfolioRevenue(Portfolio portfolio) {
+    public double calculatePortfolioRevenuePercentage(Portfolio portfolio) {
         double totalRevenue = portfolio.getEtfStocks().stream()
                 .mapToDouble(etfStock -> {
                     String stockCode = etfStock.getStock().getStockCode();
@@ -180,6 +180,21 @@ public class EtfService {
         return (totalRevenue / portfolio.getInvestAmount()) * 100; // 수익률(%) 반환
     }
 
+    //2.1.2 : 수익률 높은순으로 유저 랭킹 (Portfolio 수익률 계산 메서드)
+    // Portfolio 수익금 계산 메서드
+    public double calculatePortfolioRevenue(Portfolio portfolio) {
+        return portfolio.getEtfStocks().stream()
+                .mapToDouble(etfStock -> {
+                    // Stock의 종목 코드를 기준으로 Ranking 테이블에서 currentPrice 조회
+                    String stockCode = etfStock.getStock().getStockCode();
+                    Long currentPrice = rankingRepository.findCurrentPriceByStockCode(stockCode)
+                            .orElse(etfStock.getPurchasePrice()); // currentPrice가 없으면 purchasePrice를 사용
+
+                    // 수익률 계산
+                    return (currentPrice - etfStock.getPurchasePrice()) * etfStock.getPercentage();
+                })
+                .sum();
+    }
 
     public Optional<Double> getUserRevenuePercentage(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
@@ -198,7 +213,7 @@ public class EtfService {
 
 
     // 유저 한 명의 revenuePercentage 계산 메서드
-    private double calculateUserRevenuePercentage(User user) {
+    public double calculateUserRevenuePercentage(User user) {
         List<Portfolio> portfolios = user.getPortfolioss();
 
         long totalInvestAmount = portfolios.stream()
