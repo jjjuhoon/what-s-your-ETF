@@ -168,6 +168,9 @@ public class RankingService {
             return;
         }
 
+        // 해당 rankType에 맞는 컬럼 초기화
+        resetRankingColumn(rankType);
+
         for (Map<String, Object> rankData : output) {
             try {
                 String stockName = (String) rankData.get("hts_kor_isnm");
@@ -188,7 +191,9 @@ public class RankingService {
                     continue; // Skip incomplete data
                 }
 
-                Ranking ranking = new Ranking();
+                Ranking ranking = rankingRepository.findByStockCode(stockCode)
+                        .orElse(new Ranking());
+
                 ranking.setStockName(stockName);
                 ranking.setStockCode(stockCode);
                 ranking.setCurrentPrice(Long.parseLong(currentPriceStr));
@@ -210,11 +215,33 @@ public class RankingService {
                         throw new IllegalArgumentException("Unknown rank type: " + rankType);
                 }
 
-                saveOrUpdateRanking(ranking);
+                rankingRepository.save(ranking);
             } catch (Exception e) {
                 System.err.println("Error processing data: " + rankData + ", Error: " + e.getMessage());
             }
         }
+    }
+    private void resetRankingColumn(String rankType) {
+        List<Ranking> rankings = rankingRepository.findAll();
+        for (Ranking ranking : rankings) {
+            switch (rankType) {
+                case "volume":
+                    ranking.setVolumeRank(null);
+                    break;
+                case "fluctuation":
+                    ranking.setFluctuationRank(null);
+                    break;
+                case "profit":
+                    ranking.setProfitAssetIndexRank(null);
+                    break;
+                case "market_cap":
+                    ranking.setMarketCapRank(null);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown rank type: " + rankType);
+            }
+        }
+        rankingRepository.saveAll(rankings);
     }
 
 
