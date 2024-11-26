@@ -25,4 +25,7 @@ public class Notice extends BasicEntity {
 
     @Column(name = "content", nullable = false)
     private String content;
+
+    @Column(name = "is_read")
+    private boolean isRead;
 }

@@ -38,4 +38,10 @@ public class Portfolio extends BasicEntity {
 
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ETFStock> etfStocks;
+
+    @Column(name = "profit_spot")
+    private Long profitSpot;
+
+    @Column(name = "loss_spot")
+    private Long lossSpot;
 }
