@@ -1,5 +1,4 @@
 spring:
-
   config:
     import: optional:file:.env
 
@@ -12,13 +11,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: trueportfolio
   sql:
     init:
       mode: always
+
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 server:
   port: 8080

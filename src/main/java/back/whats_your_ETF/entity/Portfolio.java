@@ -1,6 +1,7 @@
 package back.whats_your_ETF.entity;
 
 import back.whats_your_ETF.global.BasicEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class Portfolio extends BasicEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
     @Column(name = "title", nullable = false)
@@ -40,8 +42,12 @@ public class Portfolio extends BasicEntity {
     private List<ETFStock> etfStocks;
 
     @Column(name = "profit_spot")
-    private Long profitSpot;
+    private Long profitSpot = 100L;
 
     @Column(name = "loss_spot")
-    private Long lossSpot;
+    private Long lossSpot = -100L;
+
+    @Column
+    private boolean alreadySend = false;
+
 }

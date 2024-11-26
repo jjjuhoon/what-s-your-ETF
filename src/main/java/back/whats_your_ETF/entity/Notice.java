@@ -28,4 +28,7 @@ public class Notice extends BasicEntity {
 
     @Column(name = "is_read")
     private boolean isRead;
+
+    @Column(name = "is_sent")
+    private boolean isSent;
 }
