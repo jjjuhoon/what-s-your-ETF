@@ -26,6 +26,7 @@ public class EtfController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     // 1.3.4 : ETF 투자하기
     @PostMapping("/buy/{user_id}")
     public ResponseEntity<Void> buyETF(@PathVariable("user_id") Long userId,
@@ -33,7 +34,6 @@ public class EtfController {
         etfService.buyETF(userId, etfInvestList);
         return ResponseEntity.ok().build();
     }
-
     // 1.3.5 : ETF 매도하기
     @DeleteMapping("/sell/{portfolio_id}")
     public ResponseEntity<Void> sellETF(@PathVariable("portfolio_id") Long portfolioId) {

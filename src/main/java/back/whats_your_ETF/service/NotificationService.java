@@ -59,6 +59,10 @@ public class NotificationService {
 
             // 수익률 변동 감지
             if (emitterRepository.isRevenueChanged(portfolio.getId(), newRevenue)) {
+                // DB 업데이트
+                portfolio.setRevenue(newRevenue);
+                portfolioRepository.save(portfolio);
+
                 PortfolioResponse response = new PortfolioResponse(
                         portfolio.getId(),
                         portfolio.getTitle(),
