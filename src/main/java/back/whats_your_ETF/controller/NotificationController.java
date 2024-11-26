@@ -26,6 +26,4 @@ public class NotificationController {
         notificationService.addPortfolioNotification(request.userId(), request.portfolioId());
         return ResponseEntity.ok().build();
     }
-
-
 }
