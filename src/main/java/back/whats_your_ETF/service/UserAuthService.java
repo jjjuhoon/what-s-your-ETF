@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserAuthService {
 
@@ -107,5 +109,15 @@ public class UserAuthService {
             return userRepository.findByNickname(value).isPresent();
         }
         throw new IllegalArgumentException("지원하지 않는 필드입니다: " + field);
+    }
+
+    // id값 반환
+    public Long getId(String userId) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        if(user == null) {
+            throw new IllegalArgumentException("존재하지 않는 userId입니다");
+
+        }
+        return user.getId();
     }
 }

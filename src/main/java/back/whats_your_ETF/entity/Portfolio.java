@@ -38,7 +38,7 @@ public class Portfolio extends BasicEntity {
     @Column(name = "is_etf", nullable = false)
     private Boolean isEtf;
 
-    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ETFStock> etfStocks;
 
     @Column(name = "profit_spot")
