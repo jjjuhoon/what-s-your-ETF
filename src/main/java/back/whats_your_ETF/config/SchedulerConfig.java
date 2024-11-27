@@ -1,6 +1,7 @@
 package back.whats_your_ETF.config;
 
 import back.whats_your_ETF.service.RankingService;
+import back.whats_your_ETF.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 public class SchedulerConfig {
 
     private final RankingService rankingService;
+    private final StockService stockService;
 
     /**
      * 매 1분마다 거래량 순위 업데이트
@@ -41,5 +43,11 @@ public class SchedulerConfig {
     @Scheduled(cron = "45 */1 * * * ?")
     public void scheduleMarketCapRankUpdate() {
         rankingService.updateMarketCapRanking();
+    }
+
+
+    @Scheduled(fixedRate = 5000) // 5초마다 실행
+    public void scheduleStockDataUpdate() {
+        stockService.updateStockData();
     }
 }

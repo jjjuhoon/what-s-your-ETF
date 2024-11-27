@@ -14,7 +14,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        format_sql: trueportfolio
+        format_sql: true
   sql:
     init:
       mode: always
