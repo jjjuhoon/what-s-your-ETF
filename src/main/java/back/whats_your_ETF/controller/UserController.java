@@ -30,13 +30,13 @@ public class UserController {
     //멤버십 가입하기
     @PostMapping("/membership/{user_id}")
     public ResponseEntity<String> updateMembership(@PathVariable("user_id") Long userId) {
-        boolean updated = userService.updateMembership(userId);
+        return userService.updateMembership(userId);
+    }
 
-        if (updated) {
-            return ResponseEntity.ok("회원 상태로 업데이트되었습니다.");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    //멤버십 해지하기
+    @DeleteMapping("/membership")
+    public ResponseEntity<String> deleteMembership(@PathVariable("user_id") Long userId) {
+        return userService.deleteMembership(userId);
     }
 
     //1.2.1 : 나의 거래내역 가져오기
