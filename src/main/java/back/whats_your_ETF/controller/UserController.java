@@ -34,7 +34,7 @@ public class UserController {
     }
 
     //멤버십 해지하기
-    @DeleteMapping("/membership")
+    @DeleteMapping("/membership/{user_id}")
     public ResponseEntity<String> deleteMembership(@PathVariable("user_id") Long userId) {
         return userService.deleteMembership(userId);
     }

@@ -15,6 +15,7 @@ public class EmitterRepository {
     private final Map<Long, List<Long>> userPortfolioPreferences = new ConcurrentHashMap<>();
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<Long, Double> portfolioRevenueCache = new ConcurrentHashMap<>();
+    private final Map<Long, Double> rankingPriceChangeRateCache = new ConcurrentHashMap<>(); // priceChangeRate 캐시
 
     public SseEmitter save(String id, SseEmitter emitter) {
         emitters.put(id, emitter);
@@ -49,5 +50,15 @@ public class EmitterRepository {
 
     public void updateRevenueCache(Long portfolioId, double newRevenue) {
         portfolioRevenueCache.put(portfolioId, newRevenue);
+    }
+
+    // priceChangeRate 캐시 값 가져오기
+    public Double getCachedPriceChangeRate(Long rankingId) {
+        return rankingPriceChangeRateCache.getOrDefault(rankingId, 0.0);
+    }
+
+    // priceChangeRate 캐시 값 업데이트
+    public void updateCachedPriceChangeRate(Long rankingId, Double newPriceChangeRate) {
+        rankingPriceChangeRateCache.put(rankingId, newPriceChangeRate);
     }
 }
