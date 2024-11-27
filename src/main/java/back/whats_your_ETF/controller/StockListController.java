@@ -1,5 +1,6 @@
 package back.whats_your_ETF.controller;
 
+import back.whats_your_ETF.dto.StockRankResponse;
 import back.whats_your_ETF.dto.StockResponse;
 import back.whats_your_ETF.service.StockListService;
 import lombok.RequiredArgsConstructor;
@@ -18,22 +19,22 @@ public class StockListController {
     private final StockListService stockListService;
 
     @GetMapping("/top30/volume")
-    public ResponseEntity<List<StockResponse>> getTop30ByVolume() {
+    public ResponseEntity<List<StockRankResponse>> getTop30ByVolume() {
         return ResponseEntity.ok(stockListService.getTop30ByVolume());
     }
 
     @GetMapping("/top30/fluctuation")
-    public ResponseEntity<List<StockResponse>> getTop30ByFluctuation() {
+    public ResponseEntity<List<StockRankResponse>> getTop30ByFluctuation() {
         return ResponseEntity.ok(stockListService.getTop30ByFluctuation());
     }
 
     @GetMapping("/top30/profit")
-    public ResponseEntity<List<StockResponse>> getTop30ByProfit() {
+    public ResponseEntity<List<StockRankResponse>> getTop30ByProfit() {
         return ResponseEntity.ok(stockListService.getTop30ByProfit());
     }
 
     @GetMapping("/top30/market_cap")
-    public ResponseEntity<List<StockResponse>> getTop30ByMarketCap() {
+    public ResponseEntity<List<StockRankResponse>> getTop30ByMarketCap() {
         return ResponseEntity.ok(stockListService.getTop30ByMarketCap());
     }
 }

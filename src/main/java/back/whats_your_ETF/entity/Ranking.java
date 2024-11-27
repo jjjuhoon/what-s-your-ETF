@@ -59,10 +59,10 @@ public class Ranking extends BasicEntity {
     private Long totalVolume; // 누적 거래량
 
     @Column(name = "price_change", nullable = true)
-    private String priceChange; // 전일 대비 금액
+    private Long priceChange; // 전일 대비 금액
 
     @Column(name = "price_change_rate", nullable = true)
-    private String priceChangeRate; // 전일 대비 등락률
+    private Long priceChangeRate; // 전일 대비 등락률
 
     @Column(name = "profit", nullable = true)
     private Long profit; // 수익 지표 값

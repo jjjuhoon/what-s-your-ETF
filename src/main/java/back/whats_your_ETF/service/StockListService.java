@@ -1,5 +1,6 @@
 package back.whats_your_ETF.service;
 
+import back.whats_your_ETF.dto.StockRankResponse;
 import back.whats_your_ETF.dto.StockResponse;
 import back.whats_your_ETF.entity.Ranking;
 import back.whats_your_ETF.repository.RankingRepository;
@@ -15,7 +16,7 @@ public class StockListService {
 
     private final RankingRepository rankingRepository;
 
-    public List<StockResponse> getTop30ByFluctuation() {
+    public List<StockRankResponse> getTop30ByFluctuation() {
         return rankingRepository.findTop30ByFluctuationRank()
                 .stream()
                 .limit(30)
@@ -23,7 +24,7 @@ public class StockListService {
                 .collect(Collectors.toList());
     }
 
-    public List<StockResponse> getTop30ByMarketCap() {
+    public List<StockRankResponse> getTop30ByMarketCap() {
         return rankingRepository.findTop30ByMarketCapRank()
                 .stream()
                 .limit(30)
@@ -31,7 +32,7 @@ public class StockListService {
                 .collect(Collectors.toList());
     }
 
-    public List<StockResponse> getTop30ByProfit() {
+    public List<StockRankResponse> getTop30ByProfit() {
         return rankingRepository.findTop30ByProfitAssetIndexRank()
                 .stream()
                 .limit(30)
@@ -39,7 +40,7 @@ public class StockListService {
                 .collect(Collectors.toList());
     }
 
-    public List<StockResponse> getTop30ByVolume() {
+    public List<StockRankResponse> getTop30ByVolume() {
         return rankingRepository.findTop30ByVolumeRank()
                 .stream()
                 .limit(30)
@@ -47,11 +48,12 @@ public class StockListService {
                 .collect(Collectors.toList());
     }
 
-    private StockResponse convertToStockResponse(Ranking ranking) {
-        return new StockResponse(
+    private StockRankResponse convertToStockResponse(Ranking ranking) {
+        return new StockRankResponse(
                 ranking.getStockCode(),
                 ranking.getStockName(),
-                ranking.getCurrentPrice() != null ? ranking.getCurrentPrice().doubleValue() : 0.0
+                ranking.getCurrentPrice() != null ? ranking.getCurrentPrice().doubleValue() : 0.0,
+                0.0
         );
     }
 }

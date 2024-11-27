@@ -115,11 +115,10 @@ public class NotificationService {
         });
     }
 
-    //손익,손절spot 알림 생성
     private void sendProfitLossSpotNotification(Portfolio portfolio, double newRevenue) {
         String message = newRevenue >= portfolio.getProfitSpot()
-                ? "수익률이 목표치에 도달했습니다!"
-                : "손실률이 설정한 한도에 도달했습니다!";
+                ? "익절: 수익률이 목표치에 도달했습니다!"
+                : "손절: 손실률이 설정한 한도에 도달했습니다!";
 
         // Notice 저장
         Notice notice = Notice.builder()
@@ -137,8 +136,13 @@ public class NotificationService {
                 notice.getUser().getId()
         );
         sendNotice(portfolio.getUser().getId(), response);
-//        portfolio.setAlreadySend(true);
+
+        // 알림 중복 방지
+        portfolio.setAlreadySend(true);
+        portfolioRepository.save(portfolio);
     }
+
+
     //익절,손절 알림전송
     private void sendNotice(Long userId, NoticeResponse response) {
         Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(String.valueOf(userId));
