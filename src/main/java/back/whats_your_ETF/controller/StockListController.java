@@ -1,7 +1,6 @@
 package back.whats_your_ETF.controller;
 
 import back.whats_your_ETF.dto.StockRankResponse;
-import back.whats_your_ETF.dto.StockResponse;
 import back.whats_your_ETF.service.StockListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -4,5 +4,5 @@ public record StockRankResponse (
         String stockCode,
         String stockName,
         Double price,
-        Double percentage
+        Double priceChangeRate
 ) {}
