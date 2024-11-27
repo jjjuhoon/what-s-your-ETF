@@ -9,6 +9,7 @@ import back.whats_your_ETF.repository.PortfolioRepository;
 import back.whats_your_ETF.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -39,6 +40,61 @@ public class UserService {
                         etfService.calculateUserRevenuePercentage(user)
                 ));
     }
+
+    // 1.1.2 멤버십 가입하기
+    @Transactional
+    public ResponseEntity<String> updateMembership(Long userId) {
+        // 1. 사용자 조회
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        // 2. 사용자 존재 여부 확인
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.notFound().build(); // 사용자 없음
+        }
+
+        User user = optionalUser.get();
+
+        // 3. 이미 멤버십 가입된 경우
+        if (Boolean.TRUE.equals(user.getMember())) {
+            return ResponseEntity.badRequest().body("이미 멤버십에 가입된 사용자입니다.");
+        }
+
+        // 4. 멤버십 가입 처리
+        user.setMember(true);
+        userRepository.save(user); // 업데이트된 상태 저장
+
+        return ResponseEntity.ok("회원 상태로 업데이트되었습니다.");
+    }
+
+    //1.1.3 멤버십 해지하기
+    @Transactional
+    public ResponseEntity<String> deleteMembership(Long userId) {
+
+        //사용자 조회
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        //사용자 존재 여부 확인
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+            //사용자 없음
+        }
+        User user = optionalUser.get();
+
+        //멤버십에 가입되지 않은 경우
+        if (Boolean.FALSE.equals(user.getMember())) {
+            return ResponseEntity.badRequest().body("멤버십에 가입되지 않은 사용자입니다.");
+        }
+
+        //멤버십 해지 처리
+        user.setMember(false);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("회원 상태로 처리되었습니다.");
+
+
+    }
+
+
 
     // 1.2.1 : 나의 거래내역 가져오기
     public Optional<List<TradeHistoryResponse>> getTradeHistoryById(Long userId) {
@@ -101,18 +157,6 @@ public class UserService {
         return Optional.of(etflistResponse);
     }
 
-    //membership update
-    @Transactional
-    public boolean updateMembership(Long userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        
-        if(optionalUser.isPresent()){
-            User user = optionalUser.get();
-            user.setMember(true); // 회원 상태를 true로 변경
-            userRepository.save(user); // 변경된 데이터를 저장
-            return true;
-        }
-        return false; //사용자 ID가 없을 경우
-    }
+
 
 }
