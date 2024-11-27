@@ -50,9 +50,12 @@ public class UserAuthController {
                 // .sameSite("Strict")
                 .build();
 
+        Long id = userAuthService.getId(request.userId());
+
+
         // LoginResponse 생성
         LoginResponse loginResponse = new LoginResponse(
-                request.userId() // userId 반환
+                id // id 반환
         );
 
         // 응답에 쿠키와 userId 포함
@@ -94,8 +97,9 @@ public class UserAuthController {
     @PostMapping("/signup")
     public ResponseEntity<SignUpResponse> signup(@RequestBody SignUpRequest request) {
         userAuthService.signup(request);
+        Long id = userAuthService.getId(request.userId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new SignUpResponse("회원가입이 완료되었습니다.", null)); // userId 제거
+                .body(new SignUpResponse("회원가입이 완료되었습니다.", id));
     }
 
 
