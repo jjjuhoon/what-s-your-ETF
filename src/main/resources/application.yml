@@ -19,7 +19,7 @@ spring:
     init:
       mode: always
 
- port: ${PORT}
+port: ${PORT}
 
 
 logging:
@@ -28,5 +28,5 @@ logging:
     org.springframework.web: debug
 
 
-#appkey: ${APP_KEY}
-#appsecret: ${APP_SECRET}
+appkey: ${APP_KEY}
+appsecret: ${APP_SECRET}
