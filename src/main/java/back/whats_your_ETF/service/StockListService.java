@@ -42,17 +42,7 @@ public class StockListService {
     public void monitorPriceChanges() {
         List<Ranking> rankings = rankingRepository.findAll();
         for (Ranking ranking : rankings) {
-            String stockCode = ranking.getStockCode();
-
-            Optional<Stock> stockOptional = stockRepository.findByStockCode(stockCode);
-
-            if (stockOptional.isEmpty()) {
-                System.err.println("주식DB에 없는 주식항목입니다: " + stockCode);
-                continue;
-            }
-
-            Stock stock = stockOptional.get();
-            String currentPriceChangeRate = stock.getPriceChange();
+            String currentPriceChangeRate = ranking.getPriceChangeRate();
             String cachedPriceChangeRate = emitterRepository.getCachedPriceChangeRate(ranking.getId());
 
             // 가격 변화 감지
