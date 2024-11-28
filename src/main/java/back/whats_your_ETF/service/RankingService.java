@@ -180,6 +180,7 @@ public class RankingService {
                 }
                 String currentPriceStr = (String) rankData.get("stck_prpr");
                 String rankStr = (String) rankData.get("data_rank");
+                String priceChangeRate = (String) rankData.get("prdy_ctrt"); // 전일 대비율 추가
 
                 if (stockCode == null) {
                     System.out.println("Missing stockCode for stock: " + stockName);
@@ -197,6 +198,7 @@ public class RankingService {
                 ranking.setStockName(stockName);
                 ranking.setStockCode(stockCode);
                 ranking.setCurrentPrice(Long.parseLong(currentPriceStr));
+                ranking.setPriceChangeRate(priceChangeRate); // 전일 대비율 저장
 
                 switch (rankType) {
                     case "volume":
@@ -221,6 +223,7 @@ public class RankingService {
             }
         }
     }
+
     private void resetRankingColumn(String rankType) {
         List<Ranking> rankings = rankingRepository.findAll();
         for (Ranking ranking : rankings) {

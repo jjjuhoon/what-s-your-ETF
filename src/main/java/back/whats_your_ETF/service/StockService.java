@@ -1,7 +1,5 @@
 package back.whats_your_ETF.service;
 
-import back.whats_your_ETF.entity.Stock;
-import back.whats_your_ETF.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,18 +9,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class StockService {
 
-    private final StockRepository stockRepository;
+    private final StringRedisTemplate redisTemplate;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Transactional
@@ -81,35 +80,16 @@ public class StockService {
                                 }
                                 processedStockCodes.add(stockCode);
 
-                                // 기존 데이터 확인 및 업데이트
-                                Optional<Stock> existingStock = stockRepository.findByStockCode(stockCode);
-                                if (existingStock.isPresent()) {
-                                    Stock stock = existingStock.get();
-                                    boolean updated = false;
+                                // Redis에 저장
+                                String redisKey = "stock:" + stockCode;
+                                redisTemplate.opsForHash().put(redisKey, "stockName", stockName);
+                                redisTemplate.opsForHash().put(redisKey, "price", String.valueOf(price));
+                                redisTemplate.opsForHash().put(redisKey, "priceChange", priceChange);
 
-                                    if (!price.equals(stock.getPrice())) {
-                                        stock.setPrice(price); // 가격 업데이트
-                                        updated = true;
-                                    }
+                                // Redis 데이터에 TTL(Time-To-Live) 설정 (예: 1일)
+                                redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
 
-                                    if (stock.getPriceChange() == null || !priceChange.equals(stock.getPriceChange())) {
-                                        stock.setPriceChange(priceChange); // 등락률 업데이트
-                                        updated = true;
-                                    }
 
-                                    if (updated) {
-                                        stockRepository.save(stock);
-                                    }
-                                } else {
-                                    // 신규 데이터 추가
-                                    Stock newStock = Stock.builder()
-                                            .stockCode(stockCode)
-                                            .stockName(stockName)
-                                            .price(price)
-                                            .priceChange(priceChange)
-                                            .build();
-                                    stockRepository.save(newStock);
-                                }
                             }
                         }
                     }
@@ -130,5 +110,4 @@ public class StockService {
             }
         }
     }
-
 }
