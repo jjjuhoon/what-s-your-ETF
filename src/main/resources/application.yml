@@ -18,14 +18,18 @@ spring:
   sql:
     init:
       mode: always
-
-port: ${PORT}
+server:
+  port: ${PORT}
 
 
 logging:
   level:
     root: info
     org.springframework.web: debug
+
+redis:
+  host: ${REDIS_HOST}  # ElasticCache Redis의 엔드포인트
+  port: ${REDIS_PORT}  # ElasticCache Redis의 포트
 
 
 appkey: ${APP_KEY}
