@@ -62,4 +62,6 @@ jobs:
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
               -e PORT=${{ secrets.PORT }} \
               -p 8080:8080 \
-              ${{ secrets.APP_IMAGE }}
+              ${{ secrets.APP_IMAGE }}\
+              -e APP_KEY=${{secrets.APP_KEY}}\
+              -e APP_SECRET=${{secrets.APP_SECRET}}
