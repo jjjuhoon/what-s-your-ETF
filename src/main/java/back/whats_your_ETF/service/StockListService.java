@@ -3,8 +3,10 @@ package back.whats_your_ETF.service;
 import back.whats_your_ETF.dto.StockRankResponse;
 import back.whats_your_ETF.dto.StockResponse;
 import back.whats_your_ETF.entity.Ranking;
+import back.whats_your_ETF.entity.Stock;
 import back.whats_your_ETF.repository.EmitterRepository;
 import back.whats_your_ETF.repository.RankingRepository;
+import back.whats_your_ETF.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +24,7 @@ public class StockListService {
 
     private final RankingRepository rankingRepository;
     private final EmitterRepository emitterRepository;
+    private final StockRepository stockRepository;
 
     // SSE 연결 설정
     public SseEmitter subscribeToStockUpdates() {
@@ -38,8 +42,18 @@ public class StockListService {
     public void monitorPriceChanges() {
         List<Ranking> rankings = rankingRepository.findAll();
         for (Ranking ranking : rankings) {
-            Double currentPriceChangeRate = ranking.getPriceChangeRate();
-            Double cachedPriceChangeRate = emitterRepository.getCachedPriceChangeRate(ranking.getId());
+            String stockCode = ranking.getStockCode();
+
+            Optional<Stock> stockOptional = stockRepository.findByStockCode(stockCode);
+
+            if (stockOptional.isEmpty()) {
+                System.err.println("주식DB에 없는 주식항목입니다: " + stockCode);
+                continue;
+            }
+
+            Stock stock = stockOptional.get();
+            String currentPriceChangeRate = stock.getPriceChange();
+            String cachedPriceChangeRate = emitterRepository.getCachedPriceChangeRate(ranking.getId());
 
             // 가격 변화 감지
             if (!currentPriceChangeRate.equals(cachedPriceChangeRate)) {
