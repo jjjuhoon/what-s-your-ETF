@@ -48,7 +48,7 @@ public class StockService {
                     Map<String, Object> body = response.getBody();
                     List<Map<String, Object>> sectors = (List<Map<String, Object>>) body.get("data");
 
-                    Set<String> processedStockCodes = new HashSet<>(); // 이미 처리된 stockCode 저장
+                    Set<String> processedStockNames = new HashSet<>(); // 이미 처리된 stockName 저장
 
                     for (Map<String, Object> sector : sectors) {
                         List<Map<String, Object>> includedStocks = (List<Map<String, Object>>) sector.get("includedStocks");
@@ -73,23 +73,22 @@ public class StockService {
                                 priceChange = String.format("%.2f", Double.valueOf((String) changeRateObj) * 100);
                             }
 
-                            if (stockCode != null && stockName != null) {
-                                // 중복된 stockCode 무시
-                                if (processedStockCodes.contains(stockCode)) {
+                            if (stockName != null && stockCode != null) {
+                                // 중복된 stockName 무시
+                                if (processedStockNames.contains(stockName)) {
                                     continue;
                                 }
-                                processedStockCodes.add(stockCode);
+                                processedStockNames.add(stockName);
 
-                                // Redis에 저장
-                                String redisKey = "stock:" + stockCode;
+                                // Redis에 저장 (stockName을 키로 사용)
+                                String redisKey = "stock:" + stockName;
                                 redisTemplate.opsForHash().put(redisKey, "stockName", stockName);
+                                redisTemplate.opsForHash().put(redisKey, "stockCode", stockCode);
                                 redisTemplate.opsForHash().put(redisKey, "price", String.valueOf(price));
                                 redisTemplate.opsForHash().put(redisKey, "priceChange", priceChange);
 
                                 // Redis 데이터에 TTL(Time-To-Live) 설정 (예: 1일)
                                 redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
-
-
                             }
                         }
                     }
@@ -111,3 +110,4 @@ public class StockService {
         }
     }
 }
+
