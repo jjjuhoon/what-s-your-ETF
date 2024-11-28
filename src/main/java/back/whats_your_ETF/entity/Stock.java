@@ -28,6 +28,9 @@ public class Stock {
     @Column(name = "price", nullable = false)
     private Long price;
 
+    @Column(name = "price_change", nullable = true)
+    private String priceChange;
+
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ETFStock> etfStocks;
 }
