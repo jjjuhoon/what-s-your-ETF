@@ -29,8 +29,8 @@ public class SearchService {
         }
 
         return new StockRankResponse(
-                (String) stockData.get("stockName"),
                 (String) stockData.get("stockCode"),
+                (String) stockData.get("stockName"),
                 Long.valueOf((String) stockData.get("price")),
                 (String) stockData.get("priceChange")
         );
