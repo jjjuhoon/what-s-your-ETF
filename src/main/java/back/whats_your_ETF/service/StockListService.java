@@ -71,7 +71,7 @@ public class StockListService {
         return new StockRankResponse(
                 ranking.getStockCode(),
                 ranking.getStockName(),
-                ranking.getCurrentPrice() != null ? ranking.getCurrentPrice().doubleValue() : 0.0,
+                ranking.getCurrentPrice() != null ? ranking.getCurrentPrice() : 0L,
                 ranking.getPriceChangeRate()
         );
     }
