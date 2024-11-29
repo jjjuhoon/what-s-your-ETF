@@ -17,7 +17,7 @@ public class JwtUtil {
 /*
     1. 고정된 SECRET_KEY를 이용할 경우*/
 
-    @Value("${JWT_SECRET}") // Spring에서 주입
+    @Value("${jwt.secret}") // Spring에서 주입
     private String SECRET;
 
     private SecretKey SECRET_KEY;
@@ -48,7 +48,7 @@ public class JwtUtil {
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
-                .signWith(SECRET_KEY)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -58,7 +58,7 @@ public class JwtUtil {
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
-                .signWith(SECRET_KEY)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
