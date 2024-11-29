@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -123,5 +122,15 @@ public class UserAuthService {
 
         }
         return user.getId();
+    }
+
+    // nickname 값 반환
+    public String getNickname(String userId) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        if(user == null) {
+            throw new IllegalArgumentException("존재하지 않는 userId입니다");
+
+        }
+        return user.getNickname();
     }
 }
