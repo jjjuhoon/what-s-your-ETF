@@ -65,6 +65,7 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e APP_KEY=${{secrets.APP_KEY}}\
               -e APP_SECRET=${{secrets.APP_SECRET}}\
+              -e JWT_SECRET=${{secrets.JWT_SECRET}}\
               -p 8080:8080 \
               ${{ secrets.APP_IMAGE }}
 

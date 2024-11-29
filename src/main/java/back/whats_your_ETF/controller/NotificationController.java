@@ -23,7 +23,7 @@ public class NotificationController {
     // Portfolio 알림 추가
     @PostMapping("/subscribe/portfolio")
     public ResponseEntity<Void> addPortfolioNotification(@RequestBody PortfolioNotificationSingleRequest request) {
-        notificationService.addPortfolioNotification(request.userId(), request.portfolioId());
+        notificationService.addPortfolioNotification(request);
         return ResponseEntity.ok().build();
     }
 }

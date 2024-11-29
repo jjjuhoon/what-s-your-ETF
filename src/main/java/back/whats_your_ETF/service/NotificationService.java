@@ -1,6 +1,7 @@
 package back.whats_your_ETF.service;
 
 import back.whats_your_ETF.dto.NoticeResponse;
+import back.whats_your_ETF.dto.PortfolioNotificationSingleRequest;
 import back.whats_your_ETF.dto.PortfolioResponse;
 import back.whats_your_ETF.entity.Notice;
 import back.whats_your_ETF.entity.Portfolio;
@@ -40,12 +41,24 @@ public class NotificationService {
     }
 
     // Portfolio 알림 설정 추가
-    public void addPortfolioNotification(Long userId, Long portfolioId) {
+    public void addPortfolioNotification(PortfolioNotificationSingleRequest request) {
+        Long userId= request.userId();
+        Long portfolioId= request.portfolioId();
+        Long profitSpot=request.profitSpot();
+        Long lossSpot=request.lossSpot();
         List<Long> existingPortfolioIds = emitterRepository.getUserPortfolioPreferences(userId);
 
         if (existingPortfolioIds.size() >= 3) {
             throw new IllegalArgumentException("알림 설정은 최대 3개의 Portfolio만 가능합니다.");
         }
+
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Portfolio를 찾을 수 없습니다."));
+
+        portfolio.setProfitSpot(profitSpot);
+        portfolio.setLossSpot(lossSpot);
+
+        portfolioRepository.save(portfolio);
 
         if (!existingPortfolioIds.contains(portfolioId)) {
             existingPortfolioIds.add(portfolioId);

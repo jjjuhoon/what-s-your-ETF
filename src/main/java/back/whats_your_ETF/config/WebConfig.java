@@ -14,6 +14,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // 모든 /api/** 엔드포인트에 대해 CORS 허용
+                        .allowedOrigins("http://43.201.75.185")
                         .allowedOrigins("http://localhost:5173") // 허용할 프론트엔드 도메인
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 허용할 HTTP 메서드
                         .allowCredentials(true); // 인증 정보 포함 허용 (선택 사항)
