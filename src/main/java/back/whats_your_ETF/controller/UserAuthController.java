@@ -147,10 +147,10 @@ public class UserAuthController {
         boolean isDuplicate = userAuthService.checkDuplicate(field, value);
         if (isDuplicate) {
             String fieldName = "userId".equals(field) ? "아이디" : "닉네임";
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(fieldName + "가 이미 사용 중입니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 " + fieldName + " 입니다.");
         }
         String fieldName = "userId".equals(field) ? "아이디" : "닉네임";
-        return ResponseEntity.ok(fieldName + "는 사용 가능합니다.");
+        return ResponseEntity.ok("사용 가능한 " + fieldName + " 입니다.");
     }
 
 }
