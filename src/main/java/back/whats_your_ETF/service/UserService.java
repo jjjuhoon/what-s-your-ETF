@@ -89,7 +89,7 @@ public class UserService {
         user.setMember(false);
         userRepository.save(user);
 
-        return ResponseEntity.ok("회원 상태로 처리되었습니다.");
+        return ResponseEntity.ok("해지가 완료되었습니다.");
 
 
     }
