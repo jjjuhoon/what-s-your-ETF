@@ -51,10 +51,11 @@ public class UserAuthController {
                 .build();
 
         Long id = userAuthService.getId(request.userId());
-
+        String nickname = userAuthService.getNickname(request.userId());
 
         // LoginResponse 생성
         LoginResponse loginResponse = new LoginResponse(
+                nickname, // 닉네임 반환
                 id // id 반환
         );
 
