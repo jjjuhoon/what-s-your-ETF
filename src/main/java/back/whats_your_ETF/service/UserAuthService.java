@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class UserAuthService {
@@ -76,6 +77,9 @@ public class UserAuthService {
             throw new IllegalArgumentException("이미 사용 중인 사용자 ID입니다.");
         }
 
+        long min = 1_000_000_000L;
+        long max = 2_000_000_000L;
+
         User user = User.builder()
                 .userId(signUpRequest.userId())
                 .password(passwordEncoder.encode(signUpRequest.password()))
@@ -83,7 +87,7 @@ public class UserAuthService {
                 .isInTop10(false)
                 .level(1L)
                 .member(false)
-                .asset(0L)
+                .asset((ThreadLocalRandom.current().nextLong(min, max)))
                 .subscriberCount(0L)
                 .build();
 

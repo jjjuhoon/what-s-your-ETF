@@ -31,6 +31,8 @@ redis:
   host: ${REDIS_HOST}  # ElasticCache Redis의 엔드포인트
   port: ${REDIS_PORT}  # ElasticCache Redis의 포트
 
+jwt:
+  secret: ${JWT_SECRET}
 
 appkey: ${APP_KEY}
 appsecret: ${APP_SECRET}
