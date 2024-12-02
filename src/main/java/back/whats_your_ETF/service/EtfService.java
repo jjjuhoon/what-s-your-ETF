@@ -4,9 +4,7 @@ package back.whats_your_ETF.service;
 import back.whats_your_ETF.apiPayload.GeneralException;
 import back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
 import back.whats_your_ETF.dto.*;
-import back.whats_your_ETF.entity.ETFStock;
-import back.whats_your_ETF.entity.Portfolio;
-import back.whats_your_ETF.entity.User;
+import back.whats_your_ETF.entity.*;
 import back.whats_your_ETF.repository.*;
 
 import back.whats_your_ETF.apiPayload.GeneralException;
@@ -77,13 +75,19 @@ public class EtfService {
         etfInvestList.getEtfList().forEach(etfInvest -> {
             String redisKey = "stock:" + etfInvest.getStockName();
 
-            // Redis에서 각 필드 가져오기 (Object를 String으로 캐스팅)
+            // Redis에서 각 필드 가져오기
             String stockName = (String) redisTemplate.opsForHash().get(redisKey, "stockName");
             String stockCode = (String) redisTemplate.opsForHash().get(redisKey, "stockCode");
             String priceString = (String) redisTemplate.opsForHash().get(redisKey, "price");
 
+            // Redis에 데이터가 없는 경우 DB에서 가져오기
             if (stockName == null || stockCode == null || priceString == null) {
-                throw new GeneralException(ErrorStatus.STOCK_NOT_FOUND); // Redis에서 해당 Stock을 찾을 수 없음
+                Ranking ranking = rankingRepository.findByStockName(etfInvest.getStockName())
+                        .orElseThrow(() -> new GeneralException(ErrorStatus.STOCK_NOT_FOUND));
+
+                stockName = ranking.getStockName();
+                stockCode = ranking.getStockCode();
+                priceString = String.valueOf(ranking.getCurrentPrice());
             }
 
             Long price = Long.valueOf(priceString);
@@ -91,15 +95,16 @@ public class EtfService {
             // ETFStock 엔티티 생성 및 저장
             ETFStock etfStock = ETFStock.builder()
                     .portfolio(portfolio)
-                    .stockName(stockName)           // Redis에서 가져온 이름
-                    .stockCode(stockCode)           // Redis에서 가져온 코드
+                    .stockName(stockName)           // Redis 또는 DB에서 가져온 이름
+                    .stockCode(stockCode)           // Redis 또는 DB에서 가져온 코드
                     .percentage(etfInvest.getPercentage()) // 요청에서 받은 퍼센트
-                    .purchasePrice(price)           // Redis에서 가져온 가격
+                    .purchasePrice(price)           // Redis 또는 DB에서 가져온 가격
                     .build();
 
             etfStockRepository.save(etfStock);
         });
     }
+
 
 
 
