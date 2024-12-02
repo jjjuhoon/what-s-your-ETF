@@ -1,5 +1,6 @@
 package back.whats_your_ETF.controller;
 
+import back.whats_your_ETF.dto.MyReportResponse;
 import back.whats_your_ETF.dto.PortfolioListResponse;
 import back.whats_your_ETF.dto.TradeHistoryResponse;
 import back.whats_your_ETF.dto.UserResponse;
@@ -43,6 +44,13 @@ public class UserController {
     @GetMapping("/tradehistory/{user_id}")
     public ResponseEntity<List<TradeHistoryResponse>> getTradeHistory(@PathVariable("user_id") Long userId) {
         return userService.getTradeHistoryById(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    //1.2.2 : 나의 분석 리포트 가져오기
+    @GetMapping("/myreport/{user_id}")
+    public ResponseEntity<MyReportResponse> getMyReport(@PathVariable("user_id") Long userId) {
+        return userService.getMyReport(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

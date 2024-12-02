@@ -134,6 +134,46 @@ public class UserService {
         return Optional.of(tradeHistoryResponses);
     }
 
+    //1.2.2 나의 분석 리포트 가져오기 (가장 수익률이 높은 포트폴리오 가져오기)
+    public  Optional<MyReportResponse> getMyReport(Long userId) {
+
+        // User의 포트폴리오 중 ETF만 가져오기
+        List<Portfolio> portfolios = portfolioRepository.findByUserIdAndIsEtf(userId);
+
+        if (portfolios.isEmpty()) {
+            return Optional.empty();
+        }
+        // 가장 수익률이 높은 포트폴리오 찾기
+        Portfolio topPortfolio = portfolios.stream()
+                .max(Comparator.comparingDouble(Portfolio::getRevenue)) // 수익률 기준으로 최대값 찾기
+                .orElseThrow(() -> new IllegalArgumentException("No portfolio found for user with id: " + userId));
+
+        //1. 포트폴리오에 해당하는 총 투자금액 가져오기
+        double totalInvestAmount = topPortfolio.getInvestAmount();
+
+        //2. 종목별 수익률 * 종목별 비중
+        List<MyReportResponse.StockPerformance> stockPerformances = topPortfolio.getEtfStocks().stream()
+                .map(etfStock -> {
+                    //종목별 수익률 =  (( 현재시가 - 구매가격 )/ 구매가격 ) * 100
+                    double stockYield = ((etfStock.getStock().getPrice() - etfStock.getPurchasePrice())/(double) etfStock.getPurchasePrice())*100;
+                    //종목별 비중 = 종목 투자 금액(= 종목 퍼센트 * 총 투자금액) / 총 투자금액
+                    double stockWeight = (etfStock.getPercentage() *totalInvestAmount) / totalInvestAmount;
+                    return new MyReportResponse.StockPerformance(etfStock.getStock().getStockName(), stockYield*stockWeight);
+                })
+                .collect(Collectors.toList());
+
+        // MyReportResponse DTO로 변환
+        MyReportResponse myReportResponse = new MyReportResponse(
+                topPortfolio.getUser().getNickname(),
+                topPortfolio.getTitle(),
+                topPortfolio.getRevenue(),
+                stockPerformances
+        );
+
+        return Optional.of(myReportResponse);
+
+    }
+
     // 1.3.1 : 나의 ETF목록 가져오기
     public Optional<PortfolioListResponse> getUserETFlistById(Long userId) {
 
