@@ -4,6 +4,7 @@ import back.whats_your_ETF.global.BasicEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
@@ -42,12 +43,24 @@ public class Portfolio extends BasicEntity {
     private List<ETFStock> etfStocks;
 
     @Column(name = "profit_spot")
+    @ColumnDefault("100")
     private Long profitSpot = 100L;
 
     @Column(name = "loss_spot")
+    @ColumnDefault("-100")
     private Long lossSpot = -100L;
 
     @Column
     private boolean alreadySend = false;
+
+    @PrePersist
+    public void prePersist() {
+        if (profitSpot == null) {
+            profitSpot = 100L;
+        }
+        if (lossSpot == null) {
+            lossSpot = -100L;
+        }
+    }
 
 }
