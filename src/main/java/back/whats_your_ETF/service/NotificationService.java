@@ -1,6 +1,7 @@
 package back.whats_your_ETF.service;
 
 import back.whats_your_ETF.dto.NoticeResponse;
+import back.whats_your_ETF.dto.PortfolioNotificationDeleteRequest;
 import back.whats_your_ETF.dto.PortfolioNotificationSingleRequest;
 import back.whats_your_ETF.dto.PortfolioResponse;
 import back.whats_your_ETF.entity.Notice;
@@ -64,6 +65,29 @@ public class NotificationService {
             existingPortfolioIds.add(portfolioId);
             emitterRepository.saveUserPortfolioPreferences(userId, existingPortfolioIds);
         }
+    }
+
+    // Portfolio 알림 삭제 서비스
+    public void deletePortfolioNotification(PortfolioNotificationDeleteRequest request) {
+        Long userId = request.userId();
+        Long portfolioId = request.portfolioId();
+
+        List<Long> existingPortfolioIds = emitterRepository.getUserPortfolioPreferences(userId);
+
+        if (!existingPortfolioIds.contains(portfolioId)) {
+            throw new IllegalArgumentException("해당 Portfolio는 알림 설정에 포함되어 있지 않습니다.");
+        }
+
+        existingPortfolioIds.remove(portfolioId);
+        emitterRepository.saveUserPortfolioPreferences(userId, existingPortfolioIds);
+
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Portfolio를 찾을 수 없습니다."));
+
+        portfolio.setProfitSpot(null);
+        portfolio.setLossSpot(null);
+
+        portfolioRepository.save(portfolio);
     }
 
     // 매일 자정에 alreadySend 초기화
