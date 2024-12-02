@@ -1,5 +1,7 @@
 package back.whats_your_ETF.service;
 
+import back.whats_your_ETF.apiPayload.GeneralException;
+import back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
 import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.ETFStock;
 import back.whats_your_ETF.entity.Portfolio;
@@ -9,11 +11,13 @@ import back.whats_your_ETF.repository.PortfolioRepository;
 import back.whats_your_ETF.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,6 +29,8 @@ public class UserService {
     private final PortfolioRepository portfolioRepository;
     private final ETFStockRepository etfStockRepository;
     private final EtfService etfService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     // 특정 ID로 사용자 정보 조회
     public Optional<UserResponse> getUserById(Long userId) {
@@ -115,8 +121,8 @@ public class UserService {
                     List<StockResponse> stockResponses = etfStocks.stream()
                             .sorted(Comparator.comparing(ETFStock::getCreatedAt).reversed())
                             .map(etfStock -> new StockResponse(
-                                    etfStock.getStock().getStockCode(),
-                                    etfStock.getStock().getStockName(),
+                                    etfStock.getStockCode(),
+                                    etfStock.getStockName(),
                                     etfStock.getPercentage()
                             ))
                             .collect(Collectors.toList());
@@ -151,16 +157,30 @@ public class UserService {
         //1. 포트폴리오에 해당하는 총 투자금액 가져오기
         double totalInvestAmount = topPortfolio.getInvestAmount();
 
-        //2. 종목별 수익률 * 종목별 비중
+// 2. 종목별 수익률 * 종목별 비중
         List<MyReportResponse.StockPerformance> stockPerformances = topPortfolio.getEtfStocks().stream()
                 .map(etfStock -> {
-                    //종목별 수익률 =  (( 현재시가 - 구매가격 )/ 구매가격 ) * 100
-                    double stockYield = ((etfStock.getStock().getPrice() - etfStock.getPurchasePrice())/(double) etfStock.getPurchasePrice())*100;
-                    //종목별 비중 = 종목 투자 금액(= 종목 퍼센트 * 총 투자금액) / 총 투자금액
-                    double stockWeight = (etfStock.getPercentage() *totalInvestAmount) / totalInvestAmount;
-                    return new MyReportResponse.StockPerformance(etfStock.getStock().getStockName(), stockYield*stockWeight);
+                    // Redis에서 종목 데이터 가져오기
+                    String redisKey = "stock:" + etfStock.getStockName();
+                    Map<Object, Object> stockData = redisTemplate.opsForHash().entries(redisKey);
+
+                    if (stockData.isEmpty() || !stockData.containsKey("price")) {
+                        throw new GeneralException(ErrorStatus.STOCK_NOT_FOUND); // Redis에서 가격 정보를 찾을 수 없는 경우
+                    }
+
+                    // 현재 시가 가져오기
+                    Long currentPrice = Long.valueOf((String) stockData.get("price"));
+
+                    // 종목별 수익률 계산 = ((현재 시가 - 구매 가격) / 구매 가격) * 100
+                    double stockYield = ((currentPrice - etfStock.getPurchasePrice()) / (double) etfStock.getPurchasePrice()) * 100;
+
+                    // 종목별 비중 계산 = 종목 투자 금액(= 종목 퍼센트 * 총 투자 금액) / 총 투자 금액
+                    double stockWeight = (etfStock.getPercentage() * totalInvestAmount) / totalInvestAmount;
+
+                    return new MyReportResponse.StockPerformance((String) stockData.get("stockName"), stockYield * stockWeight);
                 })
                 .collect(Collectors.toList());
+
 
         // MyReportResponse DTO로 변환
         MyReportResponse myReportResponse = new MyReportResponse(
