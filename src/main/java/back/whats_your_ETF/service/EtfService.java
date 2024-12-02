@@ -24,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +36,25 @@ public class EtfService {
     private final PortfolioRepository portfolioRepository;
     private final RankingRepository rankingRepository;
     private final RedisTemplate<String, String> redisTemplate;
+
+    private Long getCurrentPriceFromRedisOrRanking(String stockName) {
+        String redisKey = "stock:" + stockName;
+        Map<Object, Object> stockData = redisTemplate.opsForHash().entries(redisKey);
+
+        // Redis에서 가격 확인
+        if (!stockData.isEmpty() && stockData.containsKey("price")) {
+            return Long.valueOf((String) stockData.get("price"));
+        }
+
+        // Redis에 없으면 Ranking에서 조회
+        Optional<Ranking> ranking = rankingRepository.findByStockName(stockName);
+        if (ranking.isPresent()) {
+            return ranking.get().getCurrentPrice();
+        }
+
+        // 데이터가 없으면 예외 발생
+        throw new GeneralException(ErrorStatus.STOCK_NOT_FOUND); // STOCK4001로 매핑된 오류
+    }
 
 
 
@@ -69,9 +85,8 @@ public class EtfService {
 
         // 5. 포트폴리오의 투자 금액 업데이트
         portfolio.setInvestAmount(totalInvestment);
-        portfolioRepository.save(portfolio);
 
-        // 6. Redis에서 데이터 조회 후 ETFStock 생성
+        // 6. Redis에서 데이터 조회 후 ETFStock 생성 및 연관 설정
         etfInvestList.getEtfList().forEach(etfInvest -> {
             String redisKey = "stock:" + etfInvest.getStockName();
 
@@ -92,7 +107,7 @@ public class EtfService {
 
             Long price = Long.valueOf(priceString);
 
-            // ETFStock 엔티티 생성 및 저장
+            // ETFStock 엔티티 생성
             ETFStock etfStock = ETFStock.builder()
                     .portfolio(portfolio)
                     .stockName(stockName)           // Redis 또는 DB에서 가져온 이름
@@ -101,9 +116,22 @@ public class EtfService {
                     .purchasePrice(price)           // Redis 또는 DB에서 가져온 가격
                     .build();
 
-            etfStockRepository.save(etfStock);
+            // Portfolio에 ETFStock 추가
+            if (portfolio.getEtfStocks() == null) {
+                portfolio.setEtfStocks(new ArrayList<>()); // etfStocks 리스트 초기화
+            }
+            portfolio.getEtfStocks().add(etfStock);
         });
+
+        // 7. Portfolio 저장
+        portfolioRepository.save(portfolio);
+
+        // 8. 수익률 계산 및 저장
+        Double revenue = calculatePortfolioRevenuePercentage(portfolio);
+        portfolio.setRevenue(revenue);
+        portfolioRepository.save(portfolio);
     }
+
 
 
 
@@ -188,26 +216,19 @@ public class EtfService {
     //2.1.2 : 수익률 높은순으로 유저 랭킹 (Portfolio 수익률 계산 메서드)
     // Portfolio 수익률 계산 메서드
     public double calculatePortfolioRevenuePercentage(Portfolio portfolio) {
-        // ETFStocks에서 수익률 계산
         double totalRevenue = portfolio.getEtfStocks().stream()
                 .mapToDouble(etfStock -> {
-                    // Redis에서 해당 Stock 데이터를 조회
-                    String redisKey = "stock:" + etfStock.getStockName();
-                    Map<Object, Object> stockData = redisTemplate.opsForHash().entries(redisKey);
-
-                    // 현재 가격 조회 (Redis에 없을 경우 구매 가격 사용)
-                    Long currentPrice = stockData.containsKey("price")
-                            ? Long.valueOf((String) stockData.get("price"))
-                            : etfStock.getPurchasePrice();
-
-                    // 수익 계산
+                    Long currentPrice = getCurrentPriceFromRedisOrRanking(etfStock.getStockName());
+                    if (currentPrice == null) {
+                        currentPrice = etfStock.getPurchasePrice(); // 기본값으로 구매 가격 사용
+                    }
                     return (currentPrice - etfStock.getPurchasePrice()) * etfStock.getPercentage();
                 })
                 .sum();
 
-        // 총 투자 금액으로 나눠 수익률 계산
         return (totalRevenue / portfolio.getInvestAmount()) * 100;
     }
+
 
 
 
@@ -216,18 +237,15 @@ public class EtfService {
     public double calculatePortfolioRevenue(Portfolio portfolio) {
         return portfolio.getEtfStocks().stream()
                 .mapToDouble(etfStock -> {
-                    String redisKey = "stock:" + etfStock.getStockName();
-                    Map<Object, Object> stockData = redisTemplate.opsForHash().entries(redisKey);
-
-                    // Redis에서 현재 가격 가져오기
-                    Long currentPrice = stockData.containsKey("price")
-                            ? Long.valueOf((String) stockData.get("price"))
-                            : etfStock.getPurchasePrice();
-
+                    Long currentPrice = getCurrentPriceFromRedisOrRanking(etfStock.getStockName());
+                    if (currentPrice == null) {
+                        currentPrice = etfStock.getPurchasePrice(); // 기본값으로 구매 가격 사용
+                    }
                     return (currentPrice - etfStock.getPurchasePrice()) * etfStock.getPercentage();
                 })
                 .sum();
     }
+
 
 
 
