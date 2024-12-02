@@ -22,14 +22,20 @@ public class ETFStock extends BasicEntity {
     @JoinColumn(name = "portfolio_id", nullable = false)
     private Portfolio portfolio;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_id", nullable = false)
-    private Stock stock;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "stock_id", nullable = false)
+//    private Stock stock;
 
     @Column(name = "percentage")
     private Double percentage;
 
     @Column(name = "purchase_price")
     private Long purchasePrice;
+
+    @Column(name = "stock_name", nullable = false)
+    private String stockName;
+
+    @Column(name = "stock_code", nullable = false)
+    private String stockCode;
 }
 

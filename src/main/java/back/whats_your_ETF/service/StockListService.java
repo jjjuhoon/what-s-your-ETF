@@ -1,12 +1,9 @@
 package back.whats_your_ETF.service;
 
 import back.whats_your_ETF.dto.StockRankResponse;
-import back.whats_your_ETF.dto.StockResponse;
 import back.whats_your_ETF.entity.Ranking;
-import back.whats_your_ETF.entity.Stock;
 import back.whats_your_ETF.repository.EmitterRepository;
 import back.whats_your_ETF.repository.RankingRepository;
-import back.whats_your_ETF.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,7 +21,6 @@ public class StockListService {
 
     private final RankingRepository rankingRepository;
     private final EmitterRepository emitterRepository;
-    private final StockRepository stockRepository;
 
     // SSE 연결 설정
     public SseEmitter subscribeToStockUpdates() {
