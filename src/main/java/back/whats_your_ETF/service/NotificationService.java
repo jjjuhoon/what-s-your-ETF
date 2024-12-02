@@ -103,36 +103,40 @@ public class NotificationService {
     }
 
     // Portfolio 수익률 변동 알림
-    @Scheduled(fixedRate = 5000) // 5초마다 실행
+    @Scheduled(fixedRate = 5000)
     @Transactional
     public void monitorPortfolioChanges() {
         List<Portfolio> portfolios = portfolioRepository.findAll();
 
         for (Portfolio portfolio : portfolios) {
-            double newRevenue = etfService.calculatePortfolioRevenuePercentage(portfolio);
+            try {
+                double newRevenue = etfService.calculatePortfolioRevenuePercentage(portfolio);
+//                System.out.println("Portfolio ID: " + portfolio.getId() + ", New Revenue: " + newRevenue);
 
-            // 수익률 변동 감지
-            if (emitterRepository.isRevenueChanged(portfolio.getId(), newRevenue)) {
-                // DB 업데이트
-                portfolio.setRevenue(newRevenue);
-                portfolioRepository.save(portfolio);
+                if (emitterRepository.isRevenueChanged(portfolio.getId(), newRevenue)) {
+                    portfolio.setRevenue(newRevenue);
+                    portfolioRepository.save(portfolio);
 
-                // PortfolioResponse 생성 및 SSE 전송
-                PortfolioResponse response = new PortfolioResponse(
-                        portfolio.getId(),
-                        portfolio.getTitle(),
-                        newRevenue,
-                        portfolio.getInvestAmount()
-                );
-                sendPortfolioUpdateNotification(portfolio.getUser().getId(), response);
-                emitterRepository.updateRevenueCache(portfolio.getId(), newRevenue);
-            }
-            // 익절/손절 Spot 알림
-            if ((newRevenue >= portfolio.getProfitSpot() || newRevenue <= portfolio.getLossSpot()) && !portfolio.isAlreadySend()) {
-                sendProfitLossSpotNotification(portfolio, newRevenue);
+                    PortfolioResponse response = new PortfolioResponse(
+                            portfolio.getId(),
+                            portfolio.getTitle(),
+                            newRevenue,
+                            portfolio.getInvestAmount()
+                    );
+                    sendPortfolioUpdateNotification(portfolio.getUser().getId(), response);
+                    emitterRepository.updateRevenueCache(portfolio.getId(), newRevenue);
+                }
+
+                // 익절/손절 알림 처리
+                if ((newRevenue >= portfolio.getProfitSpot() || newRevenue <= portfolio.getLossSpot()) && !portfolio.isAlreadySend()) {
+                    sendProfitLossSpotNotification(portfolio, newRevenue);
+                }
+            } catch (Exception e) {
+                System.err.println("Error while monitoring portfolio changes: " + e.getMessage());
             }
         }
     }
+
 
     private void sendNotification(Long userId, PortfolioResponse response) {
         Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(String.valueOf(userId));

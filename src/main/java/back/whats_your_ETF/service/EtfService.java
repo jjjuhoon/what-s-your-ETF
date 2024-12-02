@@ -222,12 +222,16 @@ public class EtfService {
                     if (currentPrice == null) {
                         currentPrice = etfStock.getPurchasePrice(); // 기본값으로 구매 가격 사용
                     }
+                    System.out.println("Stock: " + etfStock.getStockName() + ", CurrentPrice: " + currentPrice);
                     return (currentPrice - etfStock.getPurchasePrice()) * etfStock.getPercentage();
                 })
                 .sum();
 
-        return (totalRevenue / portfolio.getInvestAmount()) * 100;
+        double revenuePercentage = (totalRevenue / portfolio.getInvestAmount()) * 100;
+        System.out.println("Portfolio ID: " + portfolio.getId() + ", Revenue: " + revenuePercentage);
+        return revenuePercentage;
     }
+
 
 
 
