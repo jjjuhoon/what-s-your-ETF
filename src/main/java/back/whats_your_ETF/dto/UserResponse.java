@@ -8,5 +8,5 @@ public record UserResponse(
         Boolean member,
         Long asset,
         Long subscriberCount,
-        double revenue
+        Double revenue
 ) {}

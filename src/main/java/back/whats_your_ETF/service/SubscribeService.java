@@ -18,10 +18,10 @@ public class SubscribeService {
 
     private final SubscribeRepository subscribeRepository;
     private final UserRepository userRepository;
+    private final EtfService etfService;
 
-    //구독 목록 조회
+    // 구독 목록 조회
     public Optional<List<SubscribeResponse>> getSubscriptionsByUserId(Long userId) {
-
         List<Subscribe> subscriptions = subscribeRepository.findAllBySubscriberId(userId);
 
         if (subscriptions.isEmpty()) {
@@ -29,15 +29,20 @@ public class SubscribeService {
         }
 
         List<SubscribeResponse> responses = subscriptions.stream()
-                .map(subscribe -> new SubscribeResponse(
-                        subscribe.getPublisher().getId(),
-                        subscribe.getPublisher().getNickname(),
-                        subscribe.getPublisher().getAsset() // revenue를 asset로 간주
-                ))
+                .map(subscribe -> {
+                    User publisher = subscribe.getPublisher(); // 구독 대상 유저
+                    Double revenuePercentage = etfService.calculateUserRevenuePercentage(publisher); // 수익률 계산
+                    return new SubscribeResponse(
+                            publisher.getId(),
+                            publisher.getNickname(),
+                            revenuePercentage
+                    );
+                })
                 .collect(Collectors.toList());
 
         return Optional.of(responses);
     }
+
 
     // 구독하기
     @Transactional
