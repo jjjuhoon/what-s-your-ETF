@@ -7,9 +7,6 @@ import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.*;
 import back.whats_your_ETF.repository.*;
 
-import back.whats_your_ETF.apiPayload.GeneralException;
-import back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
-import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.ETFStock;
 import back.whats_your_ETF.entity.Portfolio;
 import back.whats_your_ETF.entity.User;
@@ -72,9 +69,10 @@ public class EtfService {
                 .build());
 
         // 3. 총 투자 금액 계산
-        long totalInvestment = etfInvestList.getEtfList().stream()
-                .mapToLong(EtfRequest.etfInvest::getPrice)
-                .sum();
+//        long totalInvestment = etfInvestList.getEtfList().stream()
+//                .mapToLong(EtfRequest.etfInvest::getPrice)
+//                .sum();
+        long totalInvestment = etfInvestList.getInvestmentAmount();
 
         // 4. 투자 금액만큼 사용자 자산 감소
         if (user.getAsset() < totalInvestment) {
