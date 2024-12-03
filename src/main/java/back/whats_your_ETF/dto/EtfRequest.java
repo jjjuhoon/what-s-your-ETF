@@ -13,6 +13,7 @@ public class EtfRequest {
     public static class etfInvestList {
         List<etfInvest> etfList;
         String title;
+        Long investmentAmount;
     }
 
     @Getter
