@@ -141,23 +141,24 @@ public class UserService {
     }
 
     //1.2.2 나의 분석 리포트 가져오기 (가장 수익률이 높은 포트폴리오 가져오기)
-    public  Optional<MyReportResponse> getMyReport(Long userId) {
-
+    public Optional<MyReportResponse> getMyReport(Long userId) {
         // User의 포트폴리오 중 ETF만 가져오기
         List<Portfolio> portfolios = portfolioRepository.findByUserIdAndIsEtf(userId);
 
         if (portfolios.isEmpty()) {
             return Optional.empty();
         }
-        // 가장 수익률이 높은 포트폴리오 찾기
+
+        // 가장 수익률이 높은 포트폴리오 찾기 (동률인 경우 최신 순으로)
         Portfolio topPortfolio = portfolios.stream()
-                .max(Comparator.comparingDouble(Portfolio::getRevenue)) // 수익률 기준으로 최대값 찾기
+                .max(Comparator.comparingDouble(Portfolio::getRevenue)
+                        .thenComparing(Portfolio::getCreatedAt)) // 생성일 기준 정렬 추가
                 .orElseThrow(() -> new IllegalArgumentException("No portfolio found for user with id: " + userId));
 
-        //1. 포트폴리오에 해당하는 총 투자금액 가져오기
+        // 1. 포트폴리오에 해당하는 총 투자금액 가져오기
         double totalInvestAmount = topPortfolio.getInvestAmount();
 
-// 2. 종목별 수익률 * 종목별 비중
+        // 2. 종목별 수익률 * 종목별 비중 계산
         List<MyReportResponse.StockPerformance> stockPerformances = topPortfolio.getEtfStocks().stream()
                 .map(etfStock -> {
                     // Redis에서 종목 데이터 가져오기
@@ -171,16 +172,17 @@ public class UserService {
                     // 현재 시가 가져오기
                     Long currentPrice = Long.valueOf((String) stockData.get("price"));
 
-                    // 종목별 수익률 계산 = ((현재 시가 - 구매 가격) / 구매 가격) * 100
+                    // 종목별 수익률 계산
                     double stockYield = ((currentPrice - etfStock.getPurchasePrice()) / (double) etfStock.getPurchasePrice()) * 100;
 
-                    // 종목별 비중 계산 = 종목 투자 금액(= 종목 퍼센트 * 총 투자 금액) / 총 투자 금액
+                    // 종목별 비중 계산
                     double stockWeight = (etfStock.getPercentage() * totalInvestAmount) / totalInvestAmount;
 
                     return new MyReportResponse.StockPerformance((String) stockData.get("stockName"), stockYield * stockWeight);
                 })
+                // 가중 수익률 기준으로 정렬
+                .sorted((s1, s2) -> Double.compare(s2.weightedYield(), s1.weightedYield()))
                 .collect(Collectors.toList());
-
 
         // MyReportResponse DTO로 변환
         MyReportResponse myReportResponse = new MyReportResponse(
@@ -191,8 +193,8 @@ public class UserService {
         );
 
         return Optional.of(myReportResponse);
-
     }
+
 
     // 1.3.1 : 나의 ETF목록 가져오기
     public Optional<PortfolioListResponse> getUserETFlistById(Long userId) {
