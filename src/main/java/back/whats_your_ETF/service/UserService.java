@@ -5,9 +5,11 @@ import back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
 import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.ETFStock;
 import back.whats_your_ETF.entity.Portfolio;
+import back.whats_your_ETF.entity.Ranking;
 import back.whats_your_ETF.entity.User;
 import back.whats_your_ETF.repository.ETFStockRepository;
 import back.whats_your_ETF.repository.PortfolioRepository;
+import back.whats_your_ETF.repository.RankingRepository;
 import back.whats_your_ETF.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class UserService {
     private final ETFStockRepository etfStockRepository;
     private final EtfService etfService;
     private final RedisTemplate<String, String> redisTemplate;
+    private final RankingRepository rankingRepository;
 
 
     // 특정 ID로 사용자 정보 조회
@@ -161,16 +164,24 @@ public class UserService {
         // 2. 종목별 수익률 * 종목별 비중 계산
         List<MyReportResponse.StockPerformance> stockPerformances = topPortfolio.getEtfStocks().stream()
                 .map(etfStock -> {
-                    // Redis에서 종목 데이터 가져오기
                     String redisKey = "stock:" + etfStock.getStockName();
-                    Map<Object, Object> stockData = redisTemplate.opsForHash().entries(redisKey);
 
-                    if (stockData.isEmpty() || !stockData.containsKey("price")) {
-                        throw new GeneralException(ErrorStatus.STOCK_NOT_FOUND); // Redis에서 가격 정보를 찾을 수 없는 경우
+                    // Redis에서 종목 데이터 가져오기
+                    String stockName = (String) redisTemplate.opsForHash().get(redisKey, "stockName");
+                    String stockCode = (String) redisTemplate.opsForHash().get(redisKey, "stockCode");
+                    String priceString = (String) redisTemplate.opsForHash().get(redisKey, "price");
+
+                    // Redis에 데이터가 없는 경우 DB에서 가져오기
+                    if (stockName == null || stockCode == null || priceString == null) {
+                        Ranking ranking = rankingRepository.findByStockName(etfStock.getStockName())
+                                .orElseThrow(() -> new GeneralException(ErrorStatus.STOCK_NOT_FOUND));
+
+                        stockName = ranking.getStockName();
+                        stockCode = ranking.getStockCode();
+                        priceString = String.valueOf(ranking.getCurrentPrice());
                     }
 
-                    // 현재 시가 가져오기
-                    Long currentPrice = Long.valueOf((String) stockData.get("price"));
+                    Long currentPrice = Long.valueOf(priceString);
 
                     // 종목별 수익률 계산
                     double stockYield = ((currentPrice - etfStock.getPurchasePrice()) / (double) etfStock.getPurchasePrice()) * 100;
@@ -178,7 +189,7 @@ public class UserService {
                     // 종목별 비중 계산
                     double stockWeight = (etfStock.getPercentage() * totalInvestAmount) / totalInvestAmount;
 
-                    return new MyReportResponse.StockPerformance((String) stockData.get("stockName"), stockYield * stockWeight);
+                    return new MyReportResponse.StockPerformance(stockName, stockYield * stockWeight);
                 })
                 // 가중 수익률 기준으로 정렬
                 .sorted((s1, s2) -> Double.compare(s2.weightedYield(), s1.weightedYield()))
@@ -194,6 +205,7 @@ public class UserService {
 
         return Optional.of(myReportResponse);
     }
+
 
 
     // 1.3.1 : 나의 ETF목록 가져오기
