@@ -7,9 +7,6 @@ import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.*;
 import back.whats_your_ETF.repository.*;
 
-import back.whats_your_ETF.apiPayload.GeneralException;
-import back.whats_your_ETF.apiPayload.code.status.ErrorStatus;
-import back.whats_your_ETF.dto.*;
 import back.whats_your_ETF.entity.ETFStock;
 import back.whats_your_ETF.entity.Portfolio;
 import back.whats_your_ETF.entity.User;
