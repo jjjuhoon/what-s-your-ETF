@@ -177,9 +177,9 @@ public class NotificationService {
         );
         sendNotice(portfolio.getUser().getId(), response);
 
-//        // 알림 중복 방지
-//        portfolio.setAlreadySend(true);
-//        portfolioRepository.save(portfolio);
+        // 알림 중복 방지
+        portfolio.setAlreadySend(true);
+        portfolioRepository.save(portfolio);
     }
 
 
