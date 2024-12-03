@@ -156,6 +156,19 @@ public class NotificationService {
     }
 
     private void sendProfitLossSpotNotification(Portfolio portfolio, double newRevenue) {
+        // 구독 여부 확인
+        Long userId = portfolio.getUser().getId();
+        List<Long> subscribedPortfolios = emitterRepository.getUserPortfolioPreferences(userId);
+
+        System.out.println("구독된 포트폴리오: " + subscribedPortfolios);
+
+        if (!subscribedPortfolios.contains(portfolio.getId())) {
+            // 사용자가 해당 Portfolio를 구독하지 않았으면 알림 전송하지 않음
+            System.out.println("사용자가 포트폴리오를 구독하지 않았습니다. 알림 전송 생략.");
+            return;
+        }
+
+        // 알림 메시지 생성
         String message = newRevenue >= portfolio.getProfitSpot()
                 ? "수익률 익절 알림"
                 : "손실률 손절 알림";
@@ -175,12 +188,15 @@ public class NotificationService {
                 notice.isRead(),
                 notice.getUser().getId()
         );
-        sendNotice(portfolio.getUser().getId(), response);
 
-//        // 알림 중복 방지
-        portfolio.setAlreadySend(true);
-        portfolioRepository.save(portfolio);
+        // sendNotice에 구독 여부를 확인한 후 전송
+        sendNotice(userId, response);
+
+        // 알림 중복 방지 플래그 설정
+//        portfolio.setAlreadySend(true);
+//        portfolioRepository.save(portfolio);
     }
+
 
 
     //익절,손절 알림전송

@@ -40,10 +40,6 @@ public class EmitterRepository {
         userPortfolioPreferences.put(userId, portfolioIds);
     }
 
-    public Map<Long, List<Long>> getAllUserPortfolioPreferences() {
-        return userPortfolioPreferences;
-    }
-
     public boolean isRevenueChanged(Long portfolioId, double newRevenue) {
         return portfolioRevenueCache.getOrDefault(portfolioId, 0.0) != newRevenue;
     }

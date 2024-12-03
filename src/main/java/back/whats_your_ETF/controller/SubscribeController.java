@@ -23,7 +23,7 @@ public class SubscribeController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    // 1.4.5구독하기
+    // 1.4.5 구독하기
     @PostMapping("/{subscriberId}/{publisherId}")
     public ResponseEntity<Void> subscribe(@PathVariable Long subscriberId, @PathVariable Long publisherId) {
         subscribeService.subscribe(subscriberId, publisherId);
