@@ -157,8 +157,8 @@ public class NotificationService {
 
     private void sendProfitLossSpotNotification(Portfolio portfolio, double newRevenue) {
         String message = newRevenue >= portfolio.getProfitSpot()
-                ? "익절: 수익률이 목표치에 도달했습니다!"
-                : "손절: 손실률이 설정한 한도에 도달했습니다!";
+                ? "수익률 익절 알림"
+                : "손실률 손절 알림";
 
         // Notice 저장
         Notice notice = Notice.builder()
@@ -177,7 +177,7 @@ public class NotificationService {
         );
         sendNotice(portfolio.getUser().getId(), response);
 
-        // 알림 중복 방지
+//        // 알림 중복 방지
         portfolio.setAlreadySend(true);
         portfolioRepository.save(portfolio);
     }
