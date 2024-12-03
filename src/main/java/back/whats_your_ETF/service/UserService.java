@@ -29,7 +29,7 @@ public class UserService {
     private final PortfolioRepository portfolioRepository;
     private final ETFStockRepository etfStockRepository;
     private final EtfService etfService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
 
     // 특정 ID로 사용자 정보 조회
