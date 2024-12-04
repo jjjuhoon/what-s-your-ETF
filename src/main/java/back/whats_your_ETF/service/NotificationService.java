@@ -48,9 +48,9 @@ public class NotificationService {
         Long profitSpot=request.profitSpot();
         Long lossSpot=request.lossSpot();
         List<Long> existingPortfolioIds = emitterRepository.getUserPortfolioPreferences(userId);
-
+        System.out.println("구독중인 알림갯수:"+existingPortfolioIds.size());
         if (existingPortfolioIds.size() >= 3) {
-            throw new IllegalArgumentException("알림 설정은 최대 3개의 Portfolio만 가능합니다.");
+            throw new IllegalArgumentException("알림 설정은 최대 3개만 가능합니다");
         }
 
         Portfolio portfolio = portfolioRepository.findById(portfolioId)

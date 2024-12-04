@@ -18,10 +18,11 @@ public class SearchService {
     private final RedisUtil redisUtil;
     private final RedisTemplate<String, String> redisTemplate;
 
-    // 키워드로 주식 검색
+    // 키워드 기반 주식 검색
     public List<StockRankResponse> searchStock(String userId, String stockName) {
         addSearch(userId, stockName);
 
+        // Redis에서 키워드가 포함된 모든 주식 데이터를 검색
         String pattern = "stock:*" + stockName + "*";
         Set<String> matchingKeys = redisTemplate.keys(pattern);
 

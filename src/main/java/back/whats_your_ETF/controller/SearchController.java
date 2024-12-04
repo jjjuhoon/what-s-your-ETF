@@ -3,6 +3,7 @@ package back.whats_your_ETF.controller;
 import back.whats_your_ETF.dto.StockRankResponse;
 import back.whats_your_ETF.service.SearchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -4,6 +4,7 @@ import back.whats_your_ETF.dto.PortfolioNotificationDeleteRequest;
 import back.whats_your_ETF.dto.PortfolioNotificationSingleRequest;
 import back.whats_your_ETF.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -23,10 +24,17 @@ public class NotificationController {
 
     // Portfolio 알림 추가
     @PostMapping("/subscribe/portfolio")
-    public ResponseEntity<Void> addPortfolioNotification(@RequestBody PortfolioNotificationSingleRequest request) {
-        notificationService.addPortfolioNotification(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> addPortfolioNotification(@RequestBody PortfolioNotificationSingleRequest request) {
+        try {
+            notificationService.addPortfolioNotification(request);
+            return ResponseEntity.ok("알림 설정이 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
     }
+
 
     // Portfolio 알림 삭제
     @DeleteMapping("/subscribe/portfolio")
